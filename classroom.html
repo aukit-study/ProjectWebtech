@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ห้องเรียนอัจฉริยะ - Webtech E-Learning</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .classroom-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+            margin-top: 1rem;
+        }
+
+        /* Video Player Wrapper */
+        .video-player-card {
+            background: #0D131F;
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            margin-bottom: 1.5rem;
+        }
+
+        .video-wrapper {
+            position: relative;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            height: 0;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .video-wrapper iframe, .video-wrapper .custom-mock-player {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 0;
+        }
+
+        /* Premium Customized IDE Media Mock Player */
+        .custom-mock-player {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            background: linear-gradient(135deg, #070B13 0%, #151F32 100%);
+            position: relative;
+        }
+
+        .custom-mock-player::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(rgba(139, 92, 246, 0.15) 1px, transparent 0),
+                radial-gradient(rgba(6, 182, 212, 0.1) 1px, transparent 0);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            z-index: 1;
+        }
+
+        .mock-play-btn {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(139, 92, 246, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            box-shadow: 0 0 30px var(--accent-purple-glow);
+            cursor: pointer;
+            transition: var(--transition-smooth);
+            z-index: 10;
+        }
+
+        .mock-play-btn:hover {
+            transform: scale(1.1);
+            background: var(--accent-cyan);
+            box-shadow: 0 0 30px var(--accent-cyan-glow);
+        }
+
+        .mock-player-title {
+            margin-top: 1.5rem;
+            font-family: var(--font-heading);
+            font-weight: 600;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            z-index: 10;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+        }
+
+        .mock-player-controls {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(11, 15, 25, 0.85);
+            backdrop-filter: blur(8px);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .mock-progress-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 3px;
+            background: var(--accent-cyan);
+            width: 45%;
+        }
+
+        /* Classroom Info CSS */
+        .lesson-content-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .classroom-header-panel {
+            background: rgba(21, 31, 50, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            padding: 1.25rem 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        /* Timeline / Lesson Outline */
+        .timeline-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            padding: 1.5rem;
+            height: fit-content;
+        }
+
+        .timeline-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+        }
+
+        .timeline-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.8rem 1rem;
+            border-radius: var(--border-radius-sm);
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+
+        .timeline-item:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(139, 92, 246, 0.2);
+        }
+
+        .timeline-item.active {
+            background: rgba(139, 92, 246, 0.08);
+            border-color: var(--accent-purple);
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.1);
+        }
+
+        .timeline-checkbox {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+            color: transparent;
+            transition: var(--transition-fast);
+        }
+
+        .timeline-item.completed .timeline-checkbox {
+            border-color: var(--accent-green);
+            background: var(--accent-green);
+            color: white;
+        }
+
+        .timeline-item.active .timeline-checkbox:not(.completed) {
+            border-color: var(--accent-purple);
+        }
+
+        .timeline-title {
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            flex: 1;
+        }
+
+        .timeline-item.active .timeline-title {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .timeline-item.completed .timeline-title {
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+
+        /* Achievement Unlocked Popup Styling */
+        .badge-popup-card {
+            text-align: center;
+            padding: 1.5rem;
+        }
+
+        .badge-popup-icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 1.5rem auto;
+            animation: badgeFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes badgeFloat {
+            0% { transform: translateY(0); filter: drop-shadow(0 0 5px rgba(139,92,246,0.2)); }
+            50% { transform: translateY(-8px); filter: drop-shadow(0 0 20px rgba(139,92,246,0.6)); }
+            100% { transform: translateY(0); filter: drop-shadow(0 0 5px rgba(139,92,246,0.2)); }
+        }
+
+        /* Confetti Canvas styling */
+        #confettiCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        @media (max-width: 992px) {
+            .classroom-container {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Canvas for Confetti -->
+    <canvas id="confettiCanvas"></canvas>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <i class="fa-solid fa-graduation-cap"></i> Webtech<span>E-Learning</span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">คลังคอร์ส</a></li>
+                <li><a href="classroom.html" class="nav-link active">ห้องเรียน</a></li>
+                <li><a href="profile.html" class="nav-link">โปรไฟล์ผู้ใช้</a></li>
+                <li><a href="admin.html" class="nav-link">จัดการระบบ</a></li>
+            </ul>
+            <div class="nav-actions">
+                <!-- Loaded dynamically by main.js -->
+            </div>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main>
+        <!-- Course Header & Classroom Info Summary -->
+        <div class="classroom-header-panel">
+            <div>
+                <span id="classroomCourseCategory" class="role-tag-mini" style="margin-bottom: 0.5rem; display: inline-block;">LOADING...</span>
+                <h2 id="classroomCourseTitle" style="font-family: var(--font-heading); font-size: 1.6rem;">กำลังโหลดคอร์สเรียน...</h2>
+            </div>
+            <!-- Course Completion Progress Bar -->
+            <div style="min-width: 280px;" id="courseOverallProgressContainer">
+                <!-- Loaded Dynamically -->
+            </div>
+        </div>
+
+        <!-- Split Layout Classroom -->
+        <div class="classroom-container">
+            <!-- Left Side: Custom Video Player and Lesson Contents -->
+            <div>
+                <div class="video-player-card">
+                    <div class="video-wrapper">
+                        <!-- Custom Cyber IDE Media Player Mockup -->
+                        <div class="custom-mock-player" id="classroomMediaPlayer">
+                            <div class="mock-progress-line"></div>
+                            <div class="mock-play-btn" onclick="togglePlaySimulation()">
+                                <i class="fa-solid fa-play" id="playIconSim"></i>
+                            </div>
+                            <div class="mock-player-title" id="mockPlayerTitleText">คลิกเพื่อรับชมบทเรียน</div>
+                            <div class="mock-player-controls">
+                                <div style="font-size: 0.8rem; color: var(--text-muted);">
+                                    <i class="fa-solid fa-circle" style="color:var(--accent-pink); font-size:0.5rem; margin-right:0.4rem; animation: blink 1s infinite;"></i> SIMULATION MODE
+                                </div>
+                                <div style="display:flex; gap: 1rem; color: var(--text-secondary); font-size: 0.9rem;">
+                                    <i class="fa-solid fa-volume-high"></i>
+                                    <i class="fa-solid fa-cog"></i>
+                                    <i class="fa-solid fa-expand"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lesson-content-card">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; flex-wrap:wrap; gap:1rem;">
+                        <div>
+                            <h3 id="currentLessonTitle" style="font-size:1.4rem;">เลือกบทเรียนเพื่อศึกษา</h3>
+                            <p style="color:var(--text-muted); font-size: 0.85rem; margin-top:0.25rem;">หมวดหมู่: <span id="currentLessonCourseName">Web Tech</span></p>
+                        </div>
+                        <button class="btn btn-success" id="markAsCompletedBtn" onclick="handleMarkCompletedClick()" disabled>
+                            <i class="fa-regular fa-circle-check"></i> Mark as Completed
+                        </button>
+                    </div>
+                    <div style="border-top: 1px solid var(--border-color); padding-top:1.5rem; margin-top:1rem; color:var(--text-secondary); font-size: 0.95rem;" id="currentLessonDescription">
+                        คลิกเลือกหัวข้อการเรียนรู้ทางขวามือเพื่อเริ่มต้นศึกษาบทเรียนทันที ระบบความคืบหน้าจะบันทึกสถานะการเรียนลง LocalStorage โดยอัตโนมัติ เพื่อนำไปคิดคำนวณถ้วยรางวัลในการสะสมเหรียญตราเกียรติยศต่อไป
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Lessons Timeline -->
+            <div class="timeline-card">
+                <h3 style="font-size:1.15rem; font-family:var(--font-heading); border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;"><i class="fa-solid fa-list-ol" style="color:var(--accent-purple); margin-right:0.5rem;"></i> แผนการสอน (Lessons)</h3>
+                <ul class="timeline-list" id="lessonsTimelineContainer">
+                    <!-- Rendered Dynamically -->
+                </ul>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for Badge Unlocked Celebration -->
+    <div class="modal-backdrop" id="badgeUnlockModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 class="gradient-text" style="font-size:1.4rem;"><i class="fa-solid fa-trophy"></i> Achievement Unlocked!</h3>
+                <button class="modal-close" onclick="closeBadgeModal()">✕</button>
+            </div>
+            <div class="badge-popup-card">
+                <div class="badge-popup-icon" id="badgePopupIconContainer">
+                    <!-- Loaded dynamically -->
+                </div>
+                <h4 style="font-size: 1.5rem; margin-bottom: 0.5rem;" id="badgePopupTitle">Badge Title</h4>
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;" id="badgePopupDesc">Badge Description</p>
+                <div style="background: rgba(255,255,255,0.02); border:1px solid var(--border-color); padding: 0.75rem; border-radius: var(--border-radius-sm); font-size: 0.8rem; color: var(--accent-cyan); font-weight:700;">
+                    เงื่อนไข: <span id="badgePopupReq" style="color:var(--text-primary); font-weight:500;">Req info</span>
+                </div>
+            </div>
+            <div style="margin-top: 2rem; display:flex; justify-content:center;">
+                <button class="btn btn-primary btn-sm" onclick="closeBadgeModal()"><i class="fa-solid fa-circle-play"></i> เรียนรู้ต่อ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-logo">Webtech E-Learning Platform</div>
+            <div>© 2026 Webtech Course Space. All Rights Reserved.</div>
+        </div>
+    </footer>
+
+    <!-- Scripts Section -->
+    <script src="js/state.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/classroom.js"></script>
+</body>
+</html>

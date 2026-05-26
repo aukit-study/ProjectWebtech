@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โปรไฟล์ผู้ใช้งาน - Webtech E-Learning</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .profile-layout {
+            display: grid;
+            grid-template-columns: 0.9fr 1.1fr;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        /* Profile Card Left styling */
+        .profile-card-left {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+        }
+
+        .profile-banner-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100px;
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+            opacity: 0.2;
+            z-index: 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .profile-avatar-big {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: white;
+            margin: 20px auto 1rem auto;
+            border: 4px solid var(--bg-card);
+            position: relative;
+            z-index: 1;
+            box-shadow: 0 0 20px rgba(139, 92, 246, 0.4);
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .profile-name-big {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-role-tag {
+            display: inline-block;
+            background: rgba(6, 182, 212, 0.15);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(6, 182, 212, 0.3);
+            padding: 0.2rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.06);
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            padding: 1.5rem 0;
+            margin-bottom: 1.5rem;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-num {
+            font-size: 1.6rem;
+            font-family: var(--font-heading);
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+
+        /* Rank Progress Bar */
+        .rank-progress-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-sm);
+            padding: 1rem;
+            text-align: left;
+        }
+
+        /* Right Panel styling */
+        .profile-card-right {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+
+        .profile-section-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .profile-course-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid var(--border-color);
+            padding: 1.25rem;
+            border-radius: var(--border-radius-sm);
+            margin-bottom: 1rem;
+            transition: var(--transition-fast);
+        }
+
+        .profile-course-item:hover {
+            background: rgba(255,255,255,0.04);
+            border-color: rgba(6, 182, 212, 0.2);
+        }
+
+        @media (max-width: 900px) {
+            .profile-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <i class="fa-solid fa-graduation-cap"></i> Webtech<span>E-Learning</span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">คลังคอร์ส</a></li>
+                <li><a href="classroom.html" class="nav-link">ห้องเรียน</a></li>
+                <li><a href="profile.html" class="nav-link active">โปรไฟล์ผู้ใช้</a></li>
+                <li><a href="admin.html" class="nav-link">จัดการระบบ</a></li>
+            </ul>
+            <div class="nav-actions">
+                <!-- Loaded dynamically by main.js -->
+            </div>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main>
+        <div class="profile-layout">
+            <!-- Left Side: Profile Details & Stats -->
+            <div class="profile-card-left">
+                <div class="profile-banner-bg"></div>
+                <div class="profile-avatar-big" id="profileAvatarText">ST</div>
+                <h3 class="profile-name-big" id="profileFullname">นักเรียนสายโค้ด</h3>
+                <span class="profile-role-tag" id="profileRankTitle">Beginner Dev 💻</span>
+                
+                <div class="profile-stats-grid">
+                    <div class="stat-item">
+                        <span class="stat-num" id="statCoursesEnrolled">0</span>
+                        <span class="stat-label">คอร์สที่เรียน</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-num" id="statStudyHours">0.0</span>
+                        <span class="stat-label">ชั่วโมงที่เรียน</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-num" id="statUnlockedBadges">0/4</span>
+                        <span class="stat-label">เหรียญรางวัล</span>
+                    </div>
+                </div>
+
+                <div class="rank-progress-card">
+                    <div style="display:flex; justify-content:space-between; font-size:0.8rem; font-weight:700; margin-bottom:0.5rem;">
+                        <span style="color:var(--text-secondary);">ความเก๋าทางวิชาการ (EXP)</span>
+                        <span id="rankExpRatio" style="color:var(--accent-cyan);">0 / 10 Lessons</span>
+                    </div>
+                    <div class="progress-track" style="height:6px;">
+                        <div class="progress-bar" id="rankExpProgressBar" style="width: 0%;"></div>
+                    </div>
+                    <p style="font-size:0.7rem; color:var(--text-muted); margin-top:0.5rem; text-align:center;"><i class="fa-solid fa-circle-info"></i> ปลดล็อก 10 บทเรียนเพื่อบรรลุระดับ Legendary Guru!</p>
+                </div>
+            </div>
+
+            <!-- Right Side: Enrolled Courses & Badge Gallery -->
+            <div class="profile-card-right">
+                <!-- Achievement Badges (Gamification Showcase) -->
+                <div class="profile-section-card">
+                    <h3 style="font-size:1.25rem; font-family:var(--font-heading); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem;">
+                        <i class="fa-solid fa-medal" style="color:var(--accent-purple);"></i> คลังเหรียญเกียรติยศ (Badges System)
+                    </h3>
+                    <div class="badge-gallery" id="profileBadgesGrid">
+                        <!-- Loaded dynamically with Grayscale/Color state -->
+                    </div>
+                </div>
+
+                <!-- Enrolled Courses -->
+                <div class="profile-section-card">
+                    <h3 style="font-size:1.25rem; font-family:var(--font-heading); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem;">
+                        <i class="fa-solid fa-circle-play" style="color:var(--accent-cyan);"></i> คอร์สที่กำลังเรียนอยู่ (My Progress)
+                    </h3>
+                    <div id="profileCoursesContainer">
+                        <!-- Loaded dynamically -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-logo">Webtech E-Learning Platform</div>
+            <div>© 2026 Webtech Course Space. All Rights Reserved.</div>
+        </div>
+    </footer>
+
+    <!-- Scripts Section -->
+    <script src="js/state.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/profile.js"></script>
+</body>
+</html>

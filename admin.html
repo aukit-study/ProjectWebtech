@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>หลังบ้านแอดมิน - Webtech E-Learning</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Admin Statistics Grid */
+        .admin-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 3rem;
+        }
+
+        .admin-stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-md);
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+        }
+
+        .admin-stat-info h4 {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+
+        .admin-stat-info span {
+            font-size: 2.2rem;
+            font-family: var(--font-heading);
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .admin-stat-icon {
+            font-size: 2rem;
+            color: var(--accent-purple);
+            background: rgba(139,92,246,0.1);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px rgba(139,92,246,0.1) inset;
+        }
+
+        .admin-stat-icon.cyan {
+            color: var(--accent-cyan);
+            background: rgba(6,182,212,0.1);
+        }
+
+        .admin-stat-icon.green {
+            color: var(--accent-green);
+            background: rgba(16,185,129,0.1);
+        }
+
+        /* CRUD Table Styling */
+        .admin-table-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 2rem;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+            overflow: hidden;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            margin-top: 1.5rem;
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+
+        thead {
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        th {
+            padding: 1rem 1.25rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        tbody tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: var(--transition-fast);
+        }
+
+        tbody tr:hover {
+            background: rgba(255, 255, 255, 0.01);
+        }
+
+        td {
+            padding: 1.25rem;
+            vertical-align: middle;
+            color: var(--text-primary);
+        }
+
+        .table-action-btns {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Access Restriction Alert Panel */
+        .access-restricted-card {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: rgba(21, 31, 50, 0.5);
+            border: 1px dashed #EF4444;
+            border-radius: var(--border-radius-lg);
+            margin: 2rem 0;
+            backdrop-filter: blur(12px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <i class="fa-solid fa-graduation-cap"></i> Webtech<span>E-Learning</span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">คลังคอร์ส</a></li>
+                <li><a href="classroom.html" class="nav-link">ห้องเรียน</a></li>
+                <li><a href="profile.html" class="nav-link">โปรไฟล์ผู้ใช้</a></li>
+                <li><a href="admin.html" class="nav-link active">จัดการระบบ</a></li>
+            </ul>
+            <div class="nav-actions">
+                <!-- Loaded dynamically by main.js -->
+            </div>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main>
+        <!-- SECURE VIEW: Will toggle display between Restricted Alert and Admin Dashboard depending on LocalStorage login role -->
+        <div id="restrictedAccessPanel" class="access-restricted-card" style="display:none;">
+            <i class="fa-solid fa-triangle-exclamation" style="font-size: 4rem; color: #EF4444; margin-bottom: 1.5rem; filter: drop-shadow(0 0 15px rgba(239,68,68,0.3));"></i>
+            <h2 style="font-size: 2rem; margin-bottom: 1rem;">สิทธิ์การเข้าใช้งานถูกจำกัด!</h2>
+            <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 2rem auto;">หน้านี้จัดทำไว้สำหรับผู้ดูแลระบบ (Admin) เท่านั้น นักเรียนทั่วไปไม่สามารถเข้าถึงฟังก์ชันเพิ่ม/ลบคอร์สเรียนได้</p>
+            <div style="display:flex; justify-content:center; gap:1rem;">
+                <a href="login.html" class="btn btn-primary"><i class="fa-solid fa-sign-in-alt"></i> สลับบัญชีเป็นแอดมิน</a>
+                <a href="index.html" class="btn btn-secondary">กลับหน้าหลัก</a>
+            </div>
+        </div>
+
+        <div id="adminDashboardPanel" style="display:none;">
+            <!-- Section Header -->
+            <div class="section-title-wrapper">
+                <div>
+                    <h2 class="section-title">แผงควบคุมระบบจัดการ (Admin CRUD)</h2>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">จัดการคอร์สเรียน เพิ่มบทเรียนจำลอง และอัปเดตแค็ตตาล็อกออนไลน์แบบ Real-time</p>
+                </div>
+                <button class="btn btn-success" onclick="openAddCourseModal()">
+                    <i class="fa-solid fa-plus"></i> เพิ่มคอร์สเรียนใหม่
+                </button>
+            </div>
+
+            <!-- Dashboard Stats Blocks -->
+            <div class="admin-stats-grid">
+                <div class="admin-stat-card">
+                    <div class="admin-stat-info">
+                        <h4>คอร์สทั้งหมด</h4>
+                        <span id="statAdminTotalCourses">0</span>
+                    </div>
+                    <div class="admin-stat-icon"><i class="fa-solid fa-book"></i></div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-info">
+                        <h4>สมาชิกที่ลงทะเบียน</h4>
+                        <span id="statAdminTotalUsers">0</span>
+                    </div>
+                    <div class="admin-stat-icon cyan"><i class="fa-solid fa-users"></i></div>
+                </div>
+                <div class="admin-stat-card">
+                    <div class="admin-stat-info">
+                        <h4>ประเภทความเชี่ยวชาญ</h4>
+                        <span>4 หมวด</span>
+                    </div>
+                    <div class="admin-stat-icon green"><i class="fa-solid fa-layer-group"></i></div>
+                </div>
+            </div>
+
+            <!-- Course CRUD Table Card -->
+            <div class="admin-table-card">
+                <h3 style="font-family:var(--font-heading); font-size:1.25rem;"><i class="fa-solid fa-table-list" style="color:var(--accent-cyan); margin-right:0.5rem;"></i> ทะเบียนรายการวิชาเรียนบนแพลตฟอร์ม</h3>
+                
+                <div class="table-responsive">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>รหัสคอร์ส</th>
+                                <th>ชื่อคอร์สเรียน</th>
+                                <th>หมวดหมู่</th>
+                                <th>ระดับความยาก</th>
+                                <th>ระยะเวลาเรียน</th>
+                                <th>จำนวนบทเรียน</th>
+                                <th>เครื่องมือจัดการ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminCoursesTableBody">
+                            <!-- Populated dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for adding/editing a course (CRUD Modal UI) -->
+    <div class="modal-backdrop" id="courseCrudModal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="modalCrudTitle" style="font-family:var(--font-heading);"><i class="fa-solid fa-circle-plus" style="color:var(--accent-green); margin-right:0.5rem;"></i> เพิ่มข้อมูลคอร์สใหม่</h3>
+                <button class="modal-close" onclick="closeCrudModal()">✕</button>
+            </div>
+            <form id="courseCrudForm" onsubmit="handleCrudFormSubmit(event)">
+                <!-- Hidden course ID for editing -->
+                <input type="hidden" id="crudCourseId">
+                
+                <div class="form-group">
+                    <label class="form-label">ชื่อคอร์สเรียน</label>
+                    <input type="text" id="crudCourseTitle" class="form-input" placeholder="ตัวอย่าง: React Hook & State Architecture" required>
+                </div>
+
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">หมวดหมู่</label>
+                        <select id="crudCourseCategory" class="form-input form-select" required>
+                            <option value="HTML/CSS">HTML/CSS</option>
+                            <option value="JavaScript">JavaScript</option>
+                            <option value="Backend">Backend</option>
+                            <option value="Database">Database</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">ระดับความยาก</label>
+                        <select id="crudCourseDifficulty" class="form-input form-select" required>
+                            <option value="Beginner">Beginner (เบื้องต้น)</option>
+                            <option value="Intermediate">Intermediate (ปานกลาง)</option>
+                            <option value="Advanced">Advanced (ระดับสูง)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">ระยะเวลาเรียน (ชั่วโมง)</label>
+                    <input type="text" id="crudCourseDuration" class="form-input" placeholder="ตัวอย่าง: 5 Hours" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">คำอธิบายรายวิชาย่อย</label>
+                    <textarea id="crudCourseDescription" class="form-input" style="height: 80px; resize: none;" placeholder="กรอกข้อมูลสรุปย่อวิชาเพื่อให้แสดงผลการ์ดหน้าแรกสวยงาม..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">รายชื่อบทเรียนการเรียนรู้ (ใส่ 1 บรรทัดต่อ 1 บทเรียน)</label>
+                    <textarea id="crudCourseLessons" class="form-input" style="height: 100px;" placeholder="บทนำเกี่ยวกับเทคโนโลยี&#10;การพัฒนาเชิงลึกและความเสถียร&#10;การทำ Workshop ขั้นสูง" required></textarea>
+                </div>
+
+                <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1.5rem;">
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="closeCrudModal()">ยกเลิก</button>
+                    <button type="submit" class="btn btn-success btn-sm" id="crudSubmitBtn"><i class="fa-solid fa-save"></i> บันทึกข้อมูล</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-logo">Webtech E-Learning Platform</div>
+            <div>© 2026 Webtech Course Space. All Rights Reserved.</div>
+        </div>
+    </footer>
+
+    <!-- Scripts Section -->
+    <script src="js/state.js"></script>
+    <script src="js/main.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>

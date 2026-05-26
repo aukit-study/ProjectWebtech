@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>เข้าสู่ระบบ - Webtech E-Learning</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- FontAwesome Icons for modern styling -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .login-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - var(--nav-height) - 150px);
+            padding: 2rem 0;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 460px;
+            background: rgba(21, 31, 50, 0.65);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            padding: 2.5rem;
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px rgba(139, 92, 246, 0.1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple));
+            z-index: -1;
+            border-radius: calc(var(--border-radius-lg) + 2px);
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .auth-tabs {
+            display: flex;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .auth-tab {
+            flex: 1;
+            text-align: center;
+            padding: 0.75rem;
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: var(--transition-fast);
+            border-bottom: 2px solid transparent;
+            margin-bottom: -2px;
+        }
+
+        .auth-tab.active {
+            color: var(--text-primary);
+            border-bottom-color: var(--accent-purple);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+            animation: fadeIn 0.4s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .role-selector {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.35rem;
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .role-option {
+            flex: 1;
+            text-align: center;
+            padding: 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            cursor: pointer;
+            border-radius: 4px;
+            transition: var(--transition-fast);
+            text-transform: uppercase;
+        }
+
+        .role-option.active {
+            background: var(--accent-purple);
+            color: white;
+            box-shadow: 0 2px 8px rgba(139, 92, 246, 0.4);
+        }
+
+        .auth-btn {
+            width: 100%;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <i class="fa-solid fa-graduation-cap"></i> Webtech<span>E-Learning</span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link">คลังคอร์ส</a></li>
+                <li><a href="classroom.html" class="nav-link">ห้องเรียน</a></li>
+                <li><a href="profile.html" class="nav-link">โปรไฟล์ผู้ใช้</a></li>
+                <li><a href="admin.html" class="nav-link">จัดการระบบ</a></li>
+            </ul>
+            <div class="nav-actions">
+                <!-- Loaded dynamically by main.js -->
+            </div>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main>
+        <div class="login-wrapper">
+            <div class="auth-container">
+                <div class="auth-tabs">
+                    <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">เข้าสู่ระบบ</div>
+                    <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">สมัครสมาชิก</div>
+                </div>
+
+                <!-- LOGIN FORM -->
+                <form id="loginForm" class="auth-form active" onsubmit="handleLoginSubmit(event)">
+                    <div class="form-group">
+                        <label class="form-label">ชื่อผู้ใช้ (Username)</label>
+                        <input type="text" id="loginUsername" class="form-input" placeholder="กรอกชื่อผู้ใช้ เช่น student หรือ admin" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">รหัสผ่าน (Password)</label>
+                        <input type="password" id="loginPassword" class="form-input" placeholder="กรอกรหัสผ่าน (student: 1234, admin: admin)" required>
+                    </div>
+
+                    <!-- Visual Demo Account Helper Alert -->
+                    <div style="background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: var(--border-radius-sm); padding: 0.75rem; font-size: 0.75rem; margin-bottom: 1.5rem; color: var(--text-secondary);">
+                        <span style="font-weight: 700; color: var(--accent-cyan); display:block; margin-bottom:0.25rem;"><i class="fa-solid fa-circle-info"></i> บัญชีทดสอบสำหรับตรวจการบ้าน:</span>
+                        • นักเรียน: <strong>student</strong> / รหัสผ่าน: <strong>1234</strong><br>
+                        • ผู้ดูแลระบบ: <strong>admin</strong> / รหัสผ่าน: <strong>admin</strong>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary auth-btn">
+                        <i class="fa-solid fa-arrow-right-to-bracket"></i> เข้าเรียนทันที
+                    </button>
+                </form>
+
+                <!-- REGISTER FORM -->
+                <form id="registerForm" class="auth-form" onsubmit="handleRegisterSubmit(event)">
+                    <div class="form-group">
+                        <label class="form-label">บทบาท (Account Role)</label>
+                        <div class="role-selector">
+                            <div class="role-option active" id="role-student" onclick="setRegisterRole('student')">Student (ผู้เรียน)</div>
+                            <div class="role-option" id="role-admin" onclick="setRegisterRole('admin')">Admin (หลังบ้าน)</div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">ชื่อผู้ใช้ (Username)</label>
+                        <input type="text" id="regUsername" class="form-input" placeholder="ตั้งชื่อผู้ใช้งานเป็นภาษาอังกฤษ" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">ชื่อ-นามสกุล (Full Name)</label>
+                        <input type="text" id="regFullname" class="form-input" placeholder="กรอกชื่อจริงและนามสกุลของคุณ" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">รหัสผ่าน (Password)</label>
+                        <input type="password" id="regPassword" class="form-input" placeholder="ตั้งรหัสผ่านสำหรับใช้งาน" required>
+                    </div>
+
+                    <button type="submit" class="btn btn-accent auth-btn">
+                        <i class="fa-solid fa-user-plus"></i> สมัครสมาชิกเสร็จสิ้น
+                    </button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-logo">Webtech E-Learning Platform</div>
+            <div>© 2026 Webtech Course Space. All Rights Reserved.</div>
+        </div>
+    </footer>
+
+    <!-- Scripts Section -->
+    <script src="js/state.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        let currentRegRole = 'student';
+
+        // Swap between Sign-In and Sign-Up screens
+        function switchAuthTab(type) {
+            document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+
+            if (type === 'login') {
+                document.getElementById('tab-login').classList.add('active');
+                document.getElementById('loginForm').classList.add('active');
+            } else {
+                document.getElementById('tab-register').classList.add('active');
+                document.getElementById('registerForm').classList.add('active');
+            }
+        }
+
+        // Toggle selected role button in Signup form
+        function setRegisterRole(role) {
+            currentRegRole = role;
+            document.querySelectorAll('.role-option').forEach(opt => opt.classList.remove('active'));
+            if (role === 'student') {
+                document.getElementById('role-student').classList.add('active');
+            } else {
+                document.getElementById('role-admin').classList.add('active');
+            }
+        }
+
+        // Handle Form submissions
+        function handleLoginSubmit(e) {
+            e.preventDefault();
+            const usernameInput = document.getElementById('loginUsername').value.trim();
+            const passwordInput = document.getElementById('loginPassword').value;
+
+            const result = window.WebtechState.login(usernameInput, passwordInput);
+
+            if (result.success) {
+                window.showToast("เข้าสู่ระบบสำเร็จ", `ยินดีต้อนรับกลับมา, ${result.user.fullname}!`, "success");
+                
+                // Route user based on their specific role
+                setTimeout(() => {
+                    if (result.user.role === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                }, 1000);
+            } else {
+                window.showToast("เข้าสู่ระบบล้มเหลว", result.message, "error");
+            }
+        }
+
+        function handleRegisterSubmit(e) {
+            e.preventDefault();
+            const usernameInput = document.getElementById('regUsername').value.trim();
+            const fullnameInput = document.getElementById('regFullname').value.trim();
+            const passwordInput = document.getElementById('regPassword').value;
+
+            const result = window.WebtechState.register(usernameInput, fullnameInput, passwordInput, currentRegRole);
+
+            if (result.success) {
+                window.showToast("ลงทะเบียนสำเร็จ", `สร้างบัญชีประเภท ${currentRegRole} เสร็จสิ้น!`, "success");
+                
+                setTimeout(() => {
+                    if (currentRegRole === 'admin') {
+                        window.location.href = 'admin.html';
+                    } else {
+                        window.location.href = 'index.html';
+                    }
+                }, 1000);
+            } else {
+                window.showToast("ลงทะเบียนล้มเหลว", result.message, "error");
+            }
+        }
+
+        // Auto check if already logged in and redirect to home (if desired, optional)
+    </script>
+</body>
+</html>
