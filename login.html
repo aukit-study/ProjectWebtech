@@ -176,13 +176,7 @@
 
                 <!-- REGISTER FORM -->
                 <form id="registerForm" class="auth-form" onsubmit="handleRegisterSubmit(event)">
-                    <div class="form-group">
-                        <label class="form-label">บทบาท (Account Role)</label>
-                        <div class="role-selector">
-                            <div class="role-option active" id="role-student" onclick="setRegisterRole('student')">Student (ผู้เรียน)</div>
-                            <div class="role-option" id="role-admin" onclick="setRegisterRole('admin')">Admin (หลังบ้าน)</div>
-                        </div>
-                    </div>
+                
                     <div class="form-group">
                         <label class="form-label">ชื่อผู้ใช้ (Username)</label>
                         <input type="text" id="regUsername" class="form-input" placeholder="ตั้งชื่อผู้ใช้งานเป็นภาษาอังกฤษ" required>
@@ -232,16 +226,7 @@
             }
         }
 
-        // Toggle selected role button in Signup form
-        function setRegisterRole(role) {
-            currentRegRole = role;
-            document.querySelectorAll('.role-option').forEach(opt => opt.classList.remove('active'));
-            if (role === 'student') {
-                document.getElementById('role-student').classList.add('active');
-            } else {
-                document.getElementById('role-admin').classList.add('active');
-            }
-        }
+    
 
         // Handle Form submissions
         function handleLoginSubmit(e) {

@@ -33,8 +33,14 @@ function loadStudentProfile() {
         if (progress > 0) {
             enrolledCoursesCount++;
         }
+        // 👉 [FIXED] เปลี่ยนมาเช็คสถานะผ่านกลไกส่วนกลางของกลุ่มใน state.js 
         if (c.lessons) {
-            totalLessonsCompleted += c.lessons.filter(l => l.isCompleted).length;
+            c.lessons.forEach(l => {
+                // คอร์สหลักจะถูกเช็คสถานะผ่าน property isCompleted ในบทเรียนของแต่ละคอร์ส
+                if (l.isCompleted) {
+                    totalLessonsCompleted++;
+                }
+            });
         }
     });
 
@@ -74,6 +80,7 @@ function renderBadgeGallery(currentUser) {
     const badgesContainer = document.getElementById('profileBadgesGrid');
     if (!badgesContainer) return;
 
+    // ดึงค่าคำนิยามเหรียญรางวัลจาก state.js ของกลุ่ม
     const badgeDefs = window.WebtechState.getBadgeDefinitions();
     const unlockedBadges = currentUser.unlockedBadges || [];
 
@@ -92,11 +99,11 @@ function renderBadgeGallery(currentUser) {
 
         return `
             <div class="badge-item ${lockedClass}" title="${hoverTooltip}">
-                <div class="badge-icon-wrapper">
+                <div class="badge-icon-wrapper" style="${isUnlocked ? '' : 'filter: grayscale(1) opacity(0.25);'}">
                     ${svgIcon}
                 </div>
-                <div class="badge-title">${badge.title}</div>
-                <div class="badge-desc">${badge.description}</div>
+                <div class="badge-title" style="${isUnlocked ? 'color:white;' : 'color:var(--text-muted);'}">${badge.title}</div>
+                <div class="badge-desc" style="font-size: 0.75rem; color: var(--text-secondary);">${badge.description}</div>
             </div>
         `;
     }).join('');
@@ -133,7 +140,6 @@ function renderEnrolledCoursesList(courses) {
                 <div style="flex: 1; padding-right: 1.5rem;">
                     <span class="role-tag-mini" style="font-size:0.65rem; margin-bottom:0.25rem; display:inline-block;">${course.category}</span>
                     <h4 style="font-family:var(--font-heading); font-size:1.05rem; margin-bottom:0.5rem;">${course.title}</h4>
-                    <!-- Compact Progress -->
                     <div class="progress-container" style="margin-top: 0;">
                         <div class="progress-header" style="margin-bottom:0.2rem;">
                             <span style="font-size:0.75rem;">ความสำเร็จ</span>
