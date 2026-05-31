@@ -312,8 +312,7 @@
 
             </div>
 
-            <div class="courses-grid" id="coursesGridContainer">
-                </div>
+            <div class="courses-grid" id="coursesGridContainer"></div>
         </section>
     </main>
 
@@ -331,52 +330,138 @@
     <script>
         let selectedCategory = 'ALL';
         let searchTimeoutToken = null;
+        let allCourses = [];
 
         document.addEventListener('DOMContentLoaded', () => {
-            // ... โค้ดส่วน Debouncing และการเรียก renderCourses() คงเดิม ...
+            // โหลดคอร์สจาก API ตอนหน้าโหลด
+            renderCourses();
+
+            // Debounce Search
+            const searchInput = document.getElementById('filterSearchKeyword');
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(searchTimeoutToken);
+                    searchTimeoutToken = setTimeout(() => {
+                        renderCourses();
+                    }, 400);
+                });
+            }
         });
 
         function filterCatalog(category) {
-            // ... โค้ดส่วนจัดการแท็บ Active คงเดิม ...
+            selectedCategory = category;
+
+            // อัปเดต active button
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            const btnMap = { 'ALL': 'btn-cat-ALL', 'HTML/CSS': 'btn-cat-HTML', 'JavaScript': 'btn-cat-JS' };
+            const targetBtn = document.getElementById(btnMap[category]);
+            if (targetBtn) targetBtn.classList.add('active');
+
+            renderCourses();
         }
 
-        function renderCourses() {
-            // ... โค้ดส่วนวนลูปสร้างการ์ดคอร์สเรียน คงเดิม ...
+        // ✅ ดึงคอร์สจาก API จริง
+        async function renderCourses() {
+            const container = document.getElementById('coursesGridContainer');
+            if (!container) return;
+
+            container.innerHTML = `<p style="color: var(--text-secondary);">กำลังโหลดคอร์ส...</p>`;
+
+            try {
+                const response = await fetch('/api/courses');
+                const data = await response.json();
+                const courses = data.courses;
+                allCourses = courses;
+
+                // กรองตาม category และ keyword
+                const keyword = (document.getElementById('filterSearchKeyword')?.value || '').toLowerCase();
+                const filtered = courses.filter(course => {
+                    const matchCategory = selectedCategory === 'ALL' || course.category === selectedCategory;
+                    const matchKeyword = !keyword || course.title.toLowerCase().includes(keyword);
+                    return matchCategory && matchKeyword;
+                });
+
+                if (filtered.length === 0) {
+                    container.innerHTML = `<p style="color: var(--text-secondary);">ไม่พบคอร์สที่ตรงกับเงื่อนไข</p>`;
+                    return;
+                }
+
+                container.innerHTML = filtered.map(course => {
+                    const isFull = course.current_bookings >= course.max_capacity;
+                    const seatsLeft = course.max_capacity - course.current_bookings;
+
+                    return `
+                        <div class="card floating-ui" style="display: flex; flex-direction: column;">
+                            <div class="course-card-cover" style="background: ${course.cover_image};">
+                                <span class="course-card-tag">${course.category}</span>
+                                <span class="course-card-difficulty ${course.difficulty}">${course.difficulty}</span>
+                                <span class="course-card-duration"><i class="fa-solid fa-clock"></i> ${course.duration}</span>
+                            </div>
+                            <h3 class="course-card-title">${course.title}</h3>
+                            <p class="course-card-desc">${course.description}</p>
+                            <div class="course-card-footer">
+                                <div class="course-card-stats">
+                                    <span><i class="fa-solid fa-users"></i> ${course.current_bookings}/${course.max_capacity}</span>
+                                    <span style="color: ${isFull ? '#EF4444' : '#10B981'}">
+                                        <i class="fa-solid fa-${isFull ? 'ban' : 'circle-check'}"></i>
+                                        ${isFull ? 'เต็มแล้ว' : `เหลือ ${seatsLeft} ที่นั่ง`}
+                                    </span>
+                                </div>
+                                <button 
+                                    class="btn ${isFull ? 'btn-secondary' : 'btn-primary'} btn-sm"
+                                    onclick="handleCheckoutOrderClick(${course.id})"
+                                    ${isFull ? 'disabled' : ''}>
+                                    <i class="fa-solid fa-${isFull ? 'ban' : 'cart-shopping'}"></i>
+                                    ${isFull ? 'เต็มแล้ว' : 'จองเลย'}
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                container.innerHTML = `<p style="color: #EF4444;">เกิดข้อผิดพลาดในการโหลดคอร์ส</p>`;
+            }
         }
 
-        // 🌟 เอาโค้ด async สำหรับยิงหา SQLite Backend มาวางตรงนี้แทนตัวเก่า!
+        // ✅ ส่ง JWT token และใช้ path ที่ถูกต้อง
         async function handleCheckoutOrderClick(courseId) {
             const currentUser = window.WebtechState.getCurrentUser();
             
-            // 🚨 ข้อควรระวัง: ถ้ายังไม่มีการล็อกอิน ต้องดักไม่ให้ยิง Fetch
             if (!currentUser) {
                 window.showToast("กรุณาเข้าสู่ระบบ", "คุณต้องล็อกอินก่อนทำการจองเวิร์กชอป", "error");
                 setTimeout(() => { window.location.href = 'login.html'; }, 1000);
                 return;
             }
-            
-            // ยิง API ไปหา Server Node.js (Express) จริง ๆ
-            const response = await fetch('/api/checkout', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username: currentUser.username,
-                    workshopId: courseId
-                })
-            });
 
-            const result = await response.json();
+            const token = localStorage.getItem('webtech_token');
 
-            if (response.status === 200) {
-                window.showToast("ทำรายการสำเร็จ", result.message, "success");
-                renderCourses(); // โหลดข้อมูลที่นั่งอัปเดตล่าสุดมาเรนเดอร์ใหม่
-            } else if (response.status === 409) {
-                // 🌟 ดักสเตตัส 409 Conflict หน้าต่างแจ้งเตือนสีแดงทันทีเมื่อที่นั่งเต็ม! [cite: 91]
-                window.showToast("เกิดข้อผิดพลาด (409)", result.message, "error");
+            try {
+                const response = await fetch(`/api/courses/${courseId}/enroll`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    window.showToast("ทำรายการสำเร็จ", result.message, "success");
+                    renderCourses();
+                } else if (response.status === 409) {
+                    window.showToast("เกิดข้อผิดพลาด (409)", result.message, "error");
+                } else if (response.status === 401) {
+                    window.showToast("กรุณาเข้าสู่ระบบใหม่", "Session หมดอายุ", "error");
+                    setTimeout(() => { window.location.href = 'login.html'; }, 1000);
+                } else {
+                    window.showToast("เกิดข้อผิดพลาด", result.message, "error");
+                }
+            } catch (err) {
+                window.showToast("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อ server ได้", "error");
             }
         }
     </script>
-</body>
-</html>
 </body>
 </html>

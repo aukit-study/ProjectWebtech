@@ -166,7 +166,7 @@
                     <div style="background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: var(--border-radius-sm); padding: 0.75rem; font-size: 0.75rem; margin-bottom: 1.5rem; color: var(--text-secondary);">
                         <span style="font-weight: 700; color: var(--accent-cyan); display:block; margin-bottom:0.25rem;"><i class="fa-solid fa-circle-info"></i> บัญชีทดสอบสำหรับตรวจการบ้าน:</span>
                         • นักเรียน: <strong>student</strong> / รหัสผ่าน: <strong>1234</strong><br>
-                        • ผู้ดูแลระบบ: <strong>admin</strong> / รหัสผ่าน: <strong>admin</strong>
+                        • ผู้ดูแลระบบ: <strong>admin</strong> / รหัสผ่าน: <strong>admin123</strong>
                     </div>
 
                     <button type="submit" class="btn btn-primary auth-btn">
@@ -226,56 +226,80 @@
             }
         }
 
-    
-
-        // Handle Form submissions
-        function handleLoginSubmit(e) {
+        // ✅ แก้เป็น fetch API จริง
+        async function handleLoginSubmit(e) {
             e.preventDefault();
             const usernameInput = document.getElementById('loginUsername').value.trim();
             const passwordInput = document.getElementById('loginPassword').value;
 
-            const result = window.WebtechState.login(usernameInput, passwordInput);
+            try {
+                const response = await fetch('/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: usernameInput, password: passwordInput })
+                });
 
-            if (result.success) {
-                window.showToast("เข้าสู่ระบบสำเร็จ", `ยินดีต้อนรับกลับมา, ${result.user.fullname}!`, "success");
-                
-                // Route user based on their specific role
-                setTimeout(() => {
-                    if (result.user.role === 'admin') {
-                        window.location.href = 'admin.html';
-                    } else {
-                        window.location.href = 'index.html';
-                    }
-                }, 1000);
-            } else {
-                window.showToast("เข้าสู่ระบบล้มเหลว", result.message, "error");
+                const result = await response.json();
+
+                if (response.ok) {
+                    // เก็บ JWT token และข้อมูล user
+                    localStorage.setItem('webtech_token', result.token);
+                    window.WebtechState.setCurrentUser(result.user);
+
+                    window.showToast("เข้าสู่ระบบสำเร็จ", `ยินดีต้อนรับกลับมา, ${result.user.fullname}!`, "success");
+
+                    setTimeout(() => {
+                        if (result.user.role === 'admin') {
+                            window.location.href = 'admin.html';
+                        } else {
+                            window.location.href = 'index.html';
+                        }
+                    }, 1000);
+                } else {
+                    window.showToast("เข้าสู่ระบบล้มเหลว", result.message, "error");
+                }
+            } catch (err) {
+                window.showToast("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อ server ได้", "error");
             }
         }
 
-        function handleRegisterSubmit(e) {
+        // ✅ แก้เป็น fetch API จริง
+        async function handleRegisterSubmit(e) {
             e.preventDefault();
             const usernameInput = document.getElementById('regUsername').value.trim();
             const fullnameInput = document.getElementById('regFullname').value.trim();
             const passwordInput = document.getElementById('regPassword').value;
 
-            const result = window.WebtechState.register(usernameInput, fullnameInput, passwordInput, currentRegRole);
+            try {
+                const response = await fetch('/api/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: usernameInput, fullname: fullnameInput, password: passwordInput, role: currentRegRole })
+                });
 
-            if (result.success) {
-                window.showToast("ลงทะเบียนสำเร็จ", `สร้างบัญชีประเภท ${currentRegRole} เสร็จสิ้น!`, "success");
-                
-                setTimeout(() => {
-                    if (currentRegRole === 'admin') {
-                        window.location.href = 'admin.html';
-                    } else {
-                        window.location.href = 'index.html';
-                    }
-                }, 1000);
-            } else {
-                window.showToast("ลงทะเบียนล้มเหลว", result.message, "error");
+                const result = await response.json();
+
+                if (response.ok) {
+                    // เก็บ JWT token และข้อมูล user
+                    localStorage.setItem('webtech_token', result.token);
+                    window.WebtechState.setCurrentUser(result.user);
+
+                    window.showToast("ลงทะเบียนสำเร็จ", `สร้างบัญชีเสร็จสิ้น!`, "success");
+
+                    setTimeout(() => {
+                        if (currentRegRole === 'admin') {
+                            window.location.href = 'admin.html';
+                        } else {
+                            window.location.href = 'index.html';
+                        }
+                    }, 1000);
+                } else {
+                    window.showToast("ลงทะเบียนล้มเหลว", result.message, "error");
+                }
+            } catch (err) {
+                window.showToast("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อ server ได้", "error");
             }
         }
-
-        // Auto check if already logged in and redirect to home (if desired, optional)
     </script>
 </body>
 </html>
