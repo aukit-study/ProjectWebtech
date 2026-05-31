@@ -2,7 +2,7 @@
   "name": "projectwebtech",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -18,7 +18,10 @@
   },
   "homepage": "https://github.com/aukit-study/ProjectWebtech#readme",
   "dependencies": {
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.0",
     "sqlite": "^5.1.1",
     "sqlite3": "^6.0.1"
   }

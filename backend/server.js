@@ -1,20 +1,38 @@
-// backend/server.js
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
-const app = express();
-const PORT = 3000;
+const { initDatabase } = require('./src/config/database');
 
-// 1. ตัวแกะข้อมูล JSON (Body Parsing) เผื่อหน้าบ้านยิงส่งข้อมูลมา [cite: 32, 33]
+const app = express();
+const PORT = process.env.PORT || 5000; 
+
 app.use(express.json());
 
-// 2. 🌟 หัวใจสำคัญ: สั่งให้ Node เสิร์ฟไฟล์จากโฟลเดอร์ frontend ที่อยู่ข้าง ๆ
-// path.join จะช่วยวิ่งออกจากโฟลเดอร์ backend แล้วเดินเข้าโฟลเดอร์ frontend ให้โดยอัตโนมัติ
 app.use(express.static(path.join(__dirname, '../frontend')));
 
-// 3. เปิดพอร์ตและรันระบบ Live Server
-app.listen(PORT, () => {
-    console.log(`=======================================================`);
-    console.log(`🚀 TurnPro Live Server กำลังทำงานแล้วครับแบงค์!`);
-    console.log(`💻 ลองเข้าใช้งานหน้าเว็บได้ที่: http://localhost:${PORT}`);
-    console.log(`=======================================================`);
-});
+initDatabase()
+    .then((databaseInstance) => {
+        app.locals.db = databaseInstance;
+
+        const authRoutes = require('./src/routes/authRoutes');
+        const courseRoutes = require('./src/routes/courseRoutes');
+        const { handleError } = require('./src/middleware/errorMiddleware');
+        
+        app.use('/api/auth', authRoutes);
+        app.use('/api/courses', courseRoutes);   
+        
+        // 🛡️ Global Error Handler (ต้องอยู่หลัง API routes เสมอ)
+        app.use(handleError);
+        
+        app.listen(PORT, () => {
+            console.log(`=======================================================`);
+            console.log(`🚀 TurnPro Live Server is running!`);
+            console.log(`💻 ลองเข้าใช้งานหน้าเว็บได้ที่: http://localhost:${PORT}`);
+            console.log(`💾 SQLite Database Structure is running!`);
+            console.log(`=======================================================`);
+        });
+    })
+    .catch((err) => {
+        console.error('❌ Failed to initialize database:', err);
+        process.exit(1);
+    });
