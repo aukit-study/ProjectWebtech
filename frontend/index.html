@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>คลังคอร์สเรียน - Webtech E-Learning</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Hero Banner CSS */
+        .hero-banner {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 3rem;
+            align-items: center;
+            padding: 3.5rem 2.5rem;
+            background: rgba(21, 31, 50, 0.45);
+            border: 1px solid var(--border-color);
+            border-radius: var(--border-radius-lg);
+            margin-bottom: 3.5rem;
+            position: relative;
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+
+        .hero-banner::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .hero-content h1 {
+            font-size: 3rem;
+            line-height: 1.2;
+            margin-bottom: 1.25rem;
+        }
+
+        .hero-content p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            max-width: 580px;
+        }
+
+        /* Tech Code Terminal Mockup */
+        .terminal-mockup {
+            background: #070B13;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            padding: 1.25rem;
+            font-size: 0.85rem;
+            color: #A78BFA;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.5), 0 0 20px rgba(6, 182, 212, 0.15);
+            min-height: 220px;
+        }
+
+        .terminal-header {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding-bottom: 0.5rem;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+        .dot-red { background: #EF4444; }
+        .dot-yellow { background: #F59E0B; }
+        .dot-green { background: #10B981; }
+
+        .terminal-code {
+            color: #F9FAFB;
+        }
+        .code-keyword { color: #EC4899; }
+        .code-string { color: #10B981; }
+        .code-comment { color: var(--text-muted); }
+        .code-fn { color: var(--accent-cyan); }
+
+        /* Catalog Filters */
+        .filter-container {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 0.6rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border-color);
+            color: var(--text-secondary);
+            transition: var(--transition-fast);
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--accent-purple);
+            color: white;
+            border-color: var(--accent-purple);
+            box-shadow: 0 4px 15px var(--accent-purple-glow);
+        }
+
+        /* Course Cards Layout */
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
+        }
+
+        .course-card-cover {
+            height: 160px;
+            display: flex;
+            align-items: flex-end;
+            padding: 1.5rem;
+            position: relative;
+            color: white;
+            border-radius: 12px;
+            margin-bottom: 1.25rem;
+        }
+
+        .course-card-tag {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(11, 15, 25, 0.7);
+            backdrop-filter: blur(4px);
+            padding: 0.25rem 0.75rem;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .course-card-difficulty {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(6, 182, 212, 0.2);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(6, 182, 212, 0.4);
+            padding: 0.25rem 0.75rem;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+        
+        .course-card-difficulty.Advanced {
+            background: rgba(236, 72, 153, 0.2);
+            color: var(--accent-pink);
+            border-color: rgba(236, 72, 153, 0.4);
+        }
+
+        .course-card-duration {
+            position: absolute;
+            bottom: 1rem;
+            right: 1rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: rgba(0,0,0,0.5);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .course-card-title {
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            line-height: 1.3;
+        }
+
+        .course-card-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            min-height: 60px;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .course-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.25rem;
+            margin-top: auto;
+        }
+
+        .course-card-stats {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .course-card-stats span i {
+            margin-right: 0.25rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 900px) {
+            .hero-banner {
+                grid-template-columns: 1fr;
+            }
+            .terminal-mockup {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <header>
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+                <i class="fa-solid fa-graduation-cap"></i> Webtech<span>E-Learning</span>
+            </a>
+            <ul class="nav-menu">
+                <li><a href="index.html" class="nav-link active">คลังคอร์ส</a></li>
+                <li><a href="classroom.html" class="nav-link">ห้องเรียน</a></li>
+                <li><a href="profile.html" class="nav-link">โปรไฟล์ผู้ใช้</a></li>
+                <li><a href="admin.html" class="nav-link">จัดการระบบ</a></li>
+            </ul>
+            <div class="nav-actions">
+                <!-- Loaded dynamically by main.js -->
+            </div>
+            <div class="menu-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main>
+        <section class="hero-banner floating-ui">
+            <div class="hero-content">
+                <span class="gradient-text" style="font-weight:800; font-size:1.1rem; text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:0.75rem;">🚀 พัฒนาทักษะการเขียนโปรแกรมของคุณ</span>
+                <h1>เปลี่ยนจากศูนย์สู่ <span class="gradient-text">Pro Developer</span></h1>
+                <p>เรียนรู้วิชาการทำเว็บจากหลักสูตรคุณภาพที่ปูพื้นฐานตั้งแต่ HTML5, CSS3, Javascript ไปจนถึงการเขียน Server Backend อย่างเป็นระบบ พร้อมกลไกความคืบหน้าแบบเกมิฟิเคชันสะสมถ้วยรางวัลจริง!</p>
+                <div style="display:flex; gap:1rem;">
+                    <a href="#catalog" class="btn btn-primary"><i class="fa-solid fa-rocket"></i> เริ่มเรียนฟรีเลย</a>
+                    <a href="login.html" class="btn btn-secondary"><i class="fa-solid fa-user-plus"></i> สมัครสมาชิก</a>
+                </div>
+            </div>
+            <div class="terminal-mockup">
+                <div class="terminal-header">
+                    <div class="dot dot-red"></div>
+                    <div class="dot dot-yellow"></div>
+                    <div class="dot dot-green"></div>
+                </div>
+                <div class="terminal-code">
+                    <span class="code-comment">// คลาสจำลองความสำเร็จของโปรแกรมเมอร์</span><br>
+                    <span class="code-keyword">const</span> learner = {<br>
+                    &nbsp;&nbsp;name: <span class="code-string">"You"</span>,<br>
+                    &nbsp;&nbsp;skill: <span class="code-string">"Web Technologies"</span>,<br>
+                    &nbsp;&nbsp;isReadyToLearn: <span class="code-keyword">true</span>,<br>
+                    &nbsp;&nbsp;growth: () => <span class="code-string">"Keep coding & progress!"</span><br>
+                    };<br>
+                    <br>
+                    <span class="code-comment">/* ยินดีต้อนรับเข้าสู่อาณาจักรโค้ด */</span><br>
+                    console.<span class="code-fn">log</span>(learner.growth());<br>
+                    <span class="typing-cursor"></span>
+                </div>
+            </div>
+        </section>
+
+        <section id="catalog">
+            <div class="section-title-wrapper" style="margin-bottom: 2rem;">
+                <div>
+                    <h2 class="section-title">คอร์สเรียนและเวิร์กชอปทั้งหมดในระบบ</h2>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">คลิกจองเวิร์กชอป ทำแบบทดสอบ และปลดล็อกรางวัลระบบเกมิฟิเคชัน</p>
+                </div>
+            </div>
+
+            <div style="background: rgba(21, 31, 50, 0.45); backdrop-filter: blur(12px); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: var(--border-radius-lg); margin-bottom: 2.5rem; display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+                
+                <div class="filter-container" style="margin-bottom: 0; padding: 0;">
+                    <button class="filter-btn active" id="btn-cat-ALL" onclick="filterCatalog('ALL')">ทั้งหมด</button>
+                    <button class="filter-btn" id="btn-cat-HTML" onclick="filterCatalog('HTML/CSS')">HTML & CSS</button>
+                    <button class="filter-btn" id="btn-cat-JS" onclick="filterCatalog('JavaScript')">JavaScript</button>
+                </div>
+
+                <div style="display: flex; gap: 1rem; align-items: center; flex: 1; max-width: 500px; min-width: 280px;">
+                    <div style="position: relative; flex: 1;">
+                        <span style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" id="filterSearchKeyword" class="form-input" placeholder="ค้นหาชื่อคอร์ส (Debounce Active)..." style="padding-left: 2.5rem; height: 42px; border-radius: 50px; font-size: 0.85rem; background: rgba(0,0,0,0.2);">
+                    </div>
+                    <select id="filterPriceRange" class="form-input" style="width: 140px; height: 42px; border-radius: 50px; font-size: 0.85rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 0 1rem;">
+                        <option value="ALL">ราคา: ฟรี (Bypass)</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="courses-grid" id="coursesGridContainer">
+                </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-container">
+            <div class="footer-logo">Webtech E-Learning Platform</div>
+            <div>© 2026 Webtech Course Space. All Rights Reserved.</div>
+        </div>
+    </footer>
+
+    <!-- Scripts Section -->
+    <script src="js/state.js"></script>
+    <script src="js/main.js"></script>
+    <script>
+        let selectedCategory = 'ALL';
+        let searchTimeoutToken = null;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // ... โค้ดส่วน Debouncing และการเรียก renderCourses() คงเดิม ...
+        });
+
+        function filterCatalog(category) {
+            // ... โค้ดส่วนจัดการแท็บ Active คงเดิม ...
+        }
+
+        function renderCourses() {
+            // ... โค้ดส่วนวนลูปสร้างการ์ดคอร์สเรียน คงเดิม ...
+        }
+
+        // 🌟 เอาโค้ด async สำหรับยิงหา SQLite Backend มาวางตรงนี้แทนตัวเก่า!
+        async function handleCheckoutOrderClick(courseId) {
+            const currentUser = window.WebtechState.getCurrentUser();
+            
+            // 🚨 ข้อควรระวัง: ถ้ายังไม่มีการล็อกอิน ต้องดักไม่ให้ยิง Fetch
+            if (!currentUser) {
+                window.showToast("กรุณาเข้าสู่ระบบ", "คุณต้องล็อกอินก่อนทำการจองเวิร์กชอป", "error");
+                setTimeout(() => { window.location.href = 'login.html'; }, 1000);
+                return;
+            }
+            
+            // ยิง API ไปหา Server Node.js (Express) จริง ๆ
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: currentUser.username,
+                    workshopId: courseId
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.status === 200) {
+                window.showToast("ทำรายการสำเร็จ", result.message, "success");
+                renderCourses(); // โหลดข้อมูลที่นั่งอัปเดตล่าสุดมาเรนเดอร์ใหม่
+            } else if (response.status === 409) {
+                // 🌟 ดักสเตตัส 409 Conflict หน้าต่างแจ้งเตือนสีแดงทันทีเมื่อที่นั่งเต็ม! [cite: 91]
+                window.showToast("เกิดข้อผิดพลาด (409)", result.message, "error");
+            }
+        }
+    </script>
+</body>
+</html>
+</body>
+</html>
