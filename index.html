@@ -252,7 +252,6 @@
 
     <!-- Main Content Container -->
     <main>
-        <!-- Hero Banner Section -->
         <section class="hero-banner floating-ui">
             <div class="hero-content">
                 <span class="gradient-text" style="font-weight:800; font-size:1.1rem; text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:0.75rem;">🚀 พัฒนาทักษะการเขียนโปรแกรมของคุณ</span>
@@ -285,27 +284,36 @@
             </div>
         </section>
 
-        <!-- Course Catalog Section -->
         <section id="catalog">
-            <div class="section-title-wrapper">
+            <div class="section-title-wrapper" style="margin-bottom: 2rem;">
                 <div>
-                    <h2 class="section-title">คอร์สเรียนทั้งหมดในระบบ</h2>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">คลิกคอร์สที่ต้องการเพื่อเข้าห้องเรียน ทำแบบทดสอบ และปลดล็อกรางวัล</p>
+                    <h2 class="section-title">คอร์สเรียนและเวิร์กชอปทั้งหมดในระบบ</h2>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">คลิกจองเวิร์กชอป ทำแบบทดสอบ และปลดล็อกรางวัลระบบเกมิฟิเคชัน</p>
                 </div>
             </div>
 
-            <!-- Filters -->
-            <div class="filter-container">
-                <button class="filter-btn active" onclick="filterCatalog('ALL')">ทั้งหมด</button>
-                <button class="filter-btn" onclick="filterCatalog('HTML/CSS')">HTML & CSS</button>
-                <button class="filter-btn" onclick="filterCatalog('JavaScript')">JavaScript</button>
-                <button class="filter-btn" onclick="filterCatalog('Backend')">Backend & Server</button>
+            <div style="background: rgba(21, 31, 50, 0.45); backdrop-filter: blur(12px); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: var(--border-radius-lg); margin-bottom: 2.5rem; display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+                
+                <div class="filter-container" style="margin-bottom: 0; padding: 0;">
+                    <button class="filter-btn active" id="btn-cat-ALL" onclick="filterCatalog('ALL')">ทั้งหมด</button>
+                    <button class="filter-btn" id="btn-cat-HTML" onclick="filterCatalog('HTML/CSS')">HTML & CSS</button>
+                    <button class="filter-btn" id="btn-cat-JS" onclick="filterCatalog('JavaScript')">JavaScript</button>
+                </div>
+
+                <div style="display: flex; gap: 1rem; align-items: center; flex: 1; max-width: 500px; min-width: 280px;">
+                    <div style="position: relative; flex: 1;">
+                        <span style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"><i class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" id="filterSearchKeyword" class="form-input" placeholder="ค้นหาชื่อคอร์ส (Debounce Active)..." style="padding-left: 2.5rem; height: 42px; border-radius: 50px; font-size: 0.85rem; background: rgba(0,0,0,0.2);">
+                    </div>
+                    <select id="filterPriceRange" class="form-input" style="width: 140px; height: 42px; border-radius: 50px; font-size: 0.85rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 0 1rem;">
+                        <option value="ALL">ราคา: ฟรี (Bypass)</option>
+                    </select>
+                </div>
+
             </div>
 
-            <!-- Course Card Grid (Generated dynamically via Javascript) -->
             <div class="courses-grid" id="coursesGridContainer">
-                <!-- Rendered dynamically -->
-            </div>
+                </div>
         </section>
     </main>
 
@@ -322,20 +330,35 @@
     <script src="js/main.js"></script>
     <script>
         let selectedCategory = 'ALL';
+        let searchTimeoutToken = null;
 
         document.addEventListener('DOMContentLoaded', () => {
-            // Load and render all courses
+            // ติดตั้งกลไก Debouncing หน่วงเวลาให้ช่องป้อนคำค้นหาหลัก
+            const searchInput = document.getElementById('filterSearchKeyword');
+            if (searchInput) {
+                searchInput.addEventListener('input', () => {
+                    clearTimeout(searchTimeoutToken);
+                    searchTimeoutToken = setTimeout(() => {
+                        renderCourses();
+                    }, 400); // 🌟 หน่วงเวลา 400ms ป้องกันการ Flickering ของหน้าจอตามทฤษฎี [cite: 14]
+                });
+            }
+
+            // โหลดและเรนเดอร์คอร์สเรียนเริ่มต้นทั้งหมด
             renderCourses();
         });
 
-        // Filter Function
+        // ฟังก์ชันคลิกเลือกประเภทหมวดหมู่ (แบบเดิมของกลุ่มที่ปรับปรุงให้จำสถานะ)
         function filterCatalog(category) {
             selectedCategory = category;
             
-            // Toggle active filter button classes
+            // สลับสถานะปุ่ม Active ไฮไลต์สีม่วงเรืองแสงสวย ๆ แบบเดิม
             const btns = document.querySelectorAll('.filter-btn');
             btns.forEach(btn => {
-                if (btn.innerText.toUpperCase().includes(category.toUpperCase()) || (category === 'ALL' && btn.innerText === 'ทั้งหมด')) {
+                const btnText = btn.innerText.toUpperCase();
+                if ((category === 'ALL' && btnText === 'ทั้งหมด') || 
+                    (category === 'HTML/CSS' && btnText.includes('HTML')) || 
+                    (category === 'JavaScript' && btnText.includes('JAVASCRIPT'))) {
                     btn.classList.add('active');
                 } else {
                     btn.classList.remove('active');
@@ -345,77 +368,59 @@
             renderCourses();
         }
 
-        // Render Courses List from State Manager
+        // 🌟 ฟังก์ชันแกนกลางสำหรับการเรนเดอร์ข้อมูลแบบ Dynamic ไม่ฮาร์ดโค้ด [cite: 9, 104]
         function renderCourses() {
             const container = document.getElementById('coursesGridContainer');
             if (!container) return;
 
             const courses = window.WebtechState.getCourses();
-            let filteredCourses = courses;
+            const searchKeyword = document.getElementById('filterSearchKeyword').value.toLowerCase().trim();
 
-            if (selectedCategory !== 'ALL') {
-                filteredCourses = courses.filter(c => c.category.toUpperCase().includes(selectedCategory.toUpperCase()));
-            }
+            // 🛠️ คัดกรองชุดข้อมูลพร้อมกันทั้ง Keyword และ Category 
+            let filteredCourses = courses.filter(c => {
+                const matchesCategory = (selectedCategory === 'ALL' || c.category.toUpperCase().includes(selectedCategory.toUpperCase()));
+                const matchesKeyword = c.title.toLowerCase().includes(searchKeyword) || c.description.toLowerCase().includes(searchKeyword);
+                return matchesCategory && matchesKeyword;
+            });
 
             if (filteredCourses.length === 0) {
                 container.innerHTML = `
                     <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: rgba(255,255,255,0.02); border-radius:12px; border: 1px dashed var(--border-color);">
                         <i class="fa-solid fa-folder-open" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
-                        <p style="color: var(--text-secondary);">ไม่พบคอร์สเรียนในหมวดหมู่นี้ในระบบขณะนี้</p>
+                        <p style="color: var(--text-secondary);">ไม่พบคอร์สเรียนหรือเวิร์กชอปที่ตรงตามเงื่อนไขการค้นหาของคุณในขณะนี้</p>
                     </div>
                 `;
                 return;
             }
 
             container.innerHTML = filteredCourses.map(course => {
-                const progress = window.WebtechState.getCourseProgress(course);
-                const lessonsCount = course.lessons ? course.lessons.length : 0;
-                const completedLessonsCount = course.lessons ? course.lessons.filter(l => l.isCompleted).length : 0;
+                const availableSeats = course.max_capacity - course.current_bookings;
+                const isFull = availableSeats <= 0; // 🌟 [โจทย์ข้อ 4] เช็คสถานะที่นั่งเต็ม [cite: 90]
 
-                // Determine Action Button label and icon
-                let actionBtnLabel = '<i class="fa-solid fa-play"></i> เริ่มเรียนคอร์สนี้';
+                let actionBtnLabel = '<i class="fa-solid fa-ticket"></i> จองสิทธิ์เข้าเรียนสด';
                 let actionBtnClass = 'btn-primary';
+                let seatBadgeHtml = `<span class="course-card-difficulty">เหลือ ${availableSeats} ที่นั่ง</span>`;
                 
-                if (progress > 0 && progress < 100) {
-                    actionBtnLabel = `<i class="fa-solid fa-rotate-right"></i> เรียนต่อ (${progress}%)`;
-                    actionBtnClass = 'btn-accent';
-                } else if (progress === 100) {
-                    actionBtnLabel = '<i class="fa-solid fa-circle-check"></i> ทบทวนเนื้อหา (100%)';
-                    actionBtnClass = 'btn-success';
+                if (isFull) {
+                    actionBtnLabel = '<i class="fa-solid fa-ban"></i> ที่นั่งเต็ม (409 Conflict)';
+                    actionBtnClass = 'btn-secondary';
+                    seatBadgeHtml = `<span class="course-card-difficulty Advanced">SOLD OUT</span>`;
                 }
 
-                // Render progress bar only if progress is active
-                const progressBarHtml = `
-                    <div class="progress-container">
-                        <div class="progress-header">
-                            <span>ความคืบหน้า</span>
-                            <span>${progress}% (${completedLessonsCount}/${lessonsCount} บทเรียน)</span>
-                        </div>
-                        <div class="progress-track">
-                            <div class="progress-bar" style="width: ${progress}%;"></div>
-                        </div>
-                    </div>
-                `;
-
                 return `
-                    <div class="card card-glass card-glow-cyan" style="display:flex; flex-direction:column;">
+                    <div class="card card-glass card-glow-cyan" style="display:flex; flex-direction:column; background: rgba(21, 31, 50, 0.5);">
                         <div class="course-card-cover" style="background: ${course.coverImage}">
                             <span class="course-card-tag">${course.category}</span>
-                            <span class="course-card-difficulty ${course.difficulty}">${course.difficulty}</span>
-                            <span class="course-card-duration"><i class="fa-regular fa-clock"></i> ${course.duration}</span>
+                            ${seatBadgeHtml}
+                            <span class="course-card-duration"><i class="fa-solid fa-users"></i> ความจุสูงสุด ${course.max_capacity} คน</span>
                         </div>
                         
                         <h3 class="course-card-title">${course.title}</h3>
                         <p class="course-card-desc">${course.description}</p>
                         
-                        ${progressBarHtml}
-                        
-                        <div class="course-card-footer">
-                            <div class="course-card-stats">
-                                <span><i class="fa-solid fa-book"></i> ${lessonsCount} บทเรียน</span>
-                                <span><i class="fa-solid fa-star"></i> 4.9</span>
-                            </div>
-                            <button onclick="navigateToClassroom('${course.id}')" class="btn ${actionBtnClass} btn-sm">
+                        <div class="course-card-footer" style="margin-top: auto; padding-top: 1.25rem;">
+                            <div style="font-weight:bold; color:var(--accent-cyan); font-size:1.15rem;">FREE</div>
+                            <button onclick="handleCheckoutOrderClick('${course.id}')" class="btn ${actionBtnClass} btn-sm" ${isFull ? 'style="opacity:0.5;"' : ''}>
                                 ${actionBtnLabel}
                             </button>
                         </div>
@@ -424,9 +429,18 @@
             }).join('');
         }
 
-        // Navigate cleanly to Classroom
-        function navigateToClassroom(courseId) {
-            window.location.href = `classroom.html?courseId=${courseId}`;
+        // 🌟 ส่งข้อมูลคำสั่งซื้อผ่านระบบความปลอดภัยเซิร์ฟเวอร์จำลอง (Gatekeeper Pattern) [cite: 25, 90]
+        function handleCheckoutOrderClick(courseId) {
+            const result = window.WebtechState.checkoutWorkshopOrder(courseId);
+
+            if (result.success) {
+                // สเตตัส 200: จองสิทธิ์ผ่าน ข้ามขั้นตอนตัดเงินทันที [cite: 109]
+                window.showToast("ทำรายการสำเร็จ", result.message, "success");
+                renderCourses(); // อัปเดตยอดจำลองที่นั่งบนหน้าจอแบบเรียลไทม์
+            } else {
+                // สเตตัส 409: ที่นั่งเต็ม ยามฝั่งหลังบ้านจำลองจะส่งรหัสแจ้งบล็อกข้อมูลทันที [cite: 91]
+                window.showToast(`เกิดข้อผิดพลาด (${result.status})`, result.message, "error");
+            }
         }
     </script>
 </body>
