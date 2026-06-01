@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 
 class AuthService {
     // ฟังก์ชั่นสำหรับตรวจสอบและสร้างผู้ใช้งานใหม่
-    static async registerUser(db, username, email, password) {
+    static async registerUser(db, username, email, fullname, password) {
         if (!username || !email || !password) {
             throw new Error('MISSING_FIELDS');
         }
@@ -26,11 +26,11 @@ class AuthService {
         // 4. บันทึกข้อมูลผู้ใช้งานใหม่ลงฐานข้อมูล
         // 🔒 บังคับใช้ Parameterized Query (?) สำหรับการ INSERT ข้อมูล
         const result = await db.run(
-            'INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)',
-            [username, email, passwordHash, 'student']
+            'INSERT INTO users (username, email, fullname, password_hash, role) VALUES (?, ?, ?, ?, ?)',
+            [username, email, fullname || username, passwordHash, 'student']
         );
 
-        return { id: result.lastID, username, email, role: 'student' };
+        return { id: result.lastID, username, email, fullname: fullname || username, role: 'student' };
     }
     static async loginUser(db, username, password) {
         // 1. Server-Side Validation: ตรวจสอบว่ากรอกข้อมูลครบถ้วนไหม [cite: 34]
@@ -71,6 +71,7 @@ class AuthService {
                 id: user.id,
                 username: user.username,
                 email: user.email,
+                fullname: user.fullname || user.username,
                 role: user.role
             }
         };

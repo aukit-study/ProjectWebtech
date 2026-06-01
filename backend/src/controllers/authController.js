@@ -4,11 +4,11 @@ class AuthController {
     static async register(req, res) {
         // ดึงตัวแปรฐานข้อมูลที่ฝากไว้ใน app.locals มาใช้งาน
         const db = req.app.locals.db; 
-        const { username, email, password } = req.body;
+        const { username, email, fullname, password } = req.body;
 
         try {
             // ส่งข้อมูลไปประมวลผลที่ Service Layer 
-            const newUser = await AuthService.registerUser(db, username, email, password);
+            const newUser = await AuthService.registerUser(db, username, email, fullname, password);
             
             // ส่ง Response กลับไปหา Frontend เมื่อสำเร็จ
             return res.status(201).json({

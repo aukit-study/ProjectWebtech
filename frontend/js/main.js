@@ -23,12 +23,15 @@ function renderHeaderSession() {
     if (currentUser) {
         const isAdmin = currentUser.role === 'admin';
         const roleTag = isAdmin ? '<span class="role-tag-mini admin">Admin</span>' : '<span class="role-tag-mini">Student</span>';
-        const initials = currentUser.fullname.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'ST';
+        
+        // Handle fullname that might be undefined or empty
+        const displayName = currentUser.fullname || currentUser.username || 'User';
+        const initials = displayName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
         
         navActions.innerHTML = `
             <div class="user-profile-badge" id="userProfileDropdownTrigger" onclick="window.location.href='profile.html'">
                 <div class="user-avatar-mini">${initials}</div>
-                <div class="user-name-mini">${currentUser.fullname}</div>
+                <div class="user-name-mini">${displayName}</div>
                 ${roleTag}
             </div>
             <button class="btn btn-secondary btn-sm" id="logoutBtn" onclick="handleHeaderLogout()">

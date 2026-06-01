@@ -22,6 +22,7 @@ async function initDatabase() {
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT UNIQUE NOT NULL,
                 email TEXT UNIQUE NOT NULL,
+                fullname TEXT,
                 password_hash TEXT NOT NULL,
                 role TEXT NOT NULL DEFAULT 'student',
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -72,12 +73,12 @@ async function initDatabase() {
             const adminPasswordHash = await bcrypt.hash('admin123', 10);
 
             await db.run(
-                `INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)`,
-                ['student', 'student@turnpro.com', studentPasswordHash, 'student']
+                `INSERT INTO users (username, email, fullname, password_hash, role) VALUES (?, ?, ?, ?, ?)`,
+                ['student', 'student@turnpro.com', 'อุกฤษฏ์ นักเรียนสายโค้ด', studentPasswordHash, 'student']
             );
             await db.run(
-                `INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)`,
-                ['admin', 'admin@turnpro.com', adminPasswordHash, 'admin']
+                `INSERT INTO users (username, email, fullname, password_hash, role) VALUES (?, ?, ?, ?, ?)`,
+                ['admin', 'admin@turnpro.com', 'นายระบบ ผู้ดูแลระบบ', adminPasswordHash, 'admin']
             );
             console.log('🌱 Seeded mock users successfully.');
         }
