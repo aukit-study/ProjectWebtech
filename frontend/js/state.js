@@ -43,7 +43,8 @@ const DEFAULT_COURSES = [
 ];
 
 const DEFAULT_USERS = [
-    { username: "student", password: "1234", role: "student", fullname: "อุกฤษฏ์ นักเรียนสายโค้ด", studyHours: 12.5, unlockedBadges: [] }
+    { username: "student", password: "1234", role: "student", fullname: "อุกฤษฏ์ นักเรียนสายโค้ด", studyHours: 12.5, unlockedBadges: [] },
+    { username: "admin", password: "admin123", role: "admin", fullname: "นายระบบ ผู้ดูแลระบบ", studyHours: 50.0, unlockedBadges: ["b-1", "b-2", "b-3", "b-4"] }
 ];
 
 const BADGE_DEFINITIONS = [
