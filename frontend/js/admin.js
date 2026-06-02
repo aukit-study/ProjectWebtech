@@ -23,17 +23,17 @@ function verifyAdminPermissions() {
 }
 
 // --- REFRESH STATISTICS AND REGISTRY TABLE ---
-async function refreshAdminDashboard() {
-    try {
-        const response = await fetch('/api/courses');
-        const data = await response.json();
-        const courses = data.courses || [];
+function refreshAdminDashboard() {
+    const courses = window.WebtechState.getCourses();
 
-        document.getElementById('statAdminTotalCourses').innerText = courses.length;
-        renderAdminCoursesTable(courses);
-    } catch (err) {
-        window.showToast("เกิดข้อผิดพลาด", "ไม่สามารถโหลดข้อมูลได้", "error");
-    }
+    // 1. Render Stats Metrics (จำนวนคอร์สอิงจาก LocalStorage เดิมไปก่อน)
+    document.getElementById('statAdminTotalCourses').innerText = courses.length;
+
+    // 2. Render Registry Table Row Data
+    renderAdminCoursesTable(courses);
+    
+    // 🌟 3. [เพิ่มใหม่] สั่งรันฟังก์ชันดึงข้อมูลนักเรียนจาก Backend SQLite
+    fetchAndRenderUsers(); 
 }
 
 function renderAdminCoursesTable(courses) {
@@ -188,4 +188,98 @@ async function handleDeleteCourseClick(courseId) {
     } catch (err) {
         window.showToast("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อ server ได้", "error");
     }
+}
+
+// ==========================================
+// 🌟 ส่วนระบบจัดการสมาชิก (API Integration)
+// ==========================================
+
+// โหลดรายชื่อผู้ใช้ทั้งหมดจาก Backend ลงตาราง
+async function fetchAndRenderUsers() {
+    try {
+        const response = await fetch('/api/admin/users');
+        const result = await response.json();
+        
+        if (result.success) {
+            renderAdminUsersTable(result.data);
+            
+            // อัปเดตตัวเลขสถิติรวมของนักเรียน
+            const studentCount = result.data.filter(u => u.role === 'student').length;
+            document.getElementById('statAdminTotalUsers').innerText = studentCount;
+        }
+    } catch (error) {
+        console.error("Error fetching users:", error);
+    }
+}
+
+// วาดตารางข้อมูลสมาชิก (รองรับ Data จาก SQLite)
+function renderAdminUsersTable(users) {
+    const tbody = document.getElementById('adminUsersTableBody');
+    if (!tbody) return;
+
+    if (users.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">ไม่พบข้อมูลสมาชิกในระบบ</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = users.map(user => {
+        const isStudent = user.role === 'student';
+        const roleTagClass = isStudent ? '' : 'admin';
+        const roleBg = isStudent ? 'rgba(6,182,212,0.1)' : 'rgba(239,68,68,0.1)';
+        const roleColor = isStudent ? 'var(--accent-cyan)' : '#EF4444';
+        
+        return `
+            <tr>
+                <td><code style="color:var(--text-secondary);">${user.username}</code></td>
+                <td><strong style="color:white;">${user.fullname}</strong></td>
+                <td>
+                    <span class="role-tag-mini ${roleTagClass}" style="background:${roleBg}; color:${roleColor}; border-color:${roleColor};">
+                        ${user.role.toUpperCase()}
+                    </span>
+                </td>
+                <td>
+                    <span style="color:var(--accent-cyan); font-weight:bold;">${user.total_enrolled || 0}</span> คอร์ส
+                </td>
+                <td>
+                    <button class="btn btn-secondary btn-sm" onclick="openUserHistoryModal(${user.id}, '${user.fullname}')" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+                        <i class="fa-solid fa-eye" style="color:var(--accent-cyan);"></i> ดูประวัติ
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// เปิด Modal และดึงประวัติรายบุคคลจาก Backend
+async function openUserHistoryModal(userId, fullname) {
+    const modal = document.getElementById('userHistoryModal');
+    const tbody = document.getElementById('userHistoryTableBody');
+    
+    document.getElementById('historyModalUserName').innerText = fullname;
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">กำลังโหลดข้อมูล...</td></tr>`;
+    modal.classList.add('active');
+
+    try {
+        const response = await fetch(`/api/admin/users/${userId}/history`);
+        const result = await response.json();
+        
+        if (result.success && result.data.length > 0) {
+            tbody.innerHTML = result.data.map(item => `
+                <tr>
+                    <td style="font-weight:bold;">${item.title}</td>
+                    <td><span class="role-tag-mini" style="font-size:0.65rem;">${item.category}</span></td>
+                    <td style="color:var(--text-muted); font-size:0.85rem;">${new Date(item.enrolled_at).toLocaleString('th-TH')}</td>
+                </tr>
+            `).join('');
+        } else {
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">ยังไม่มีประวัติการจองเวิร์กชอป</td></tr>`;
+        }
+    } catch (error) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#EF4444;">เกิดข้อผิดพลาดในการดึงข้อมูล</td></tr>`;
+    }
+}
+
+function closeUserHistoryModal() {
+    const modal = document.getElementById('userHistoryModal');
+    if (modal) modal.classList.remove('active');
 }
