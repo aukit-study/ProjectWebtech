@@ -28,7 +28,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // 3. Setup Confetti Canvas Size
     initConfettiCanvas();
 });
-
 async function renderEnrolledCoursesOverview() {
     const container = document.getElementById('enrolledCoursesGrid');
     if (!container) return;

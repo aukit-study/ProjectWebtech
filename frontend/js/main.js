@@ -3,16 +3,9 @@
    ========================================================================== */
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Render Dynamic User Navigation in Header
     renderHeaderSession();
-    
-    // 2. Setup Mobile Navigation Menu
     setupMobileNav();
-
-    // 3. Highlight Active Page Link
     highlightActiveLink();
-
-    // 4. Initialize Cart System
     CartManager.init();
 });
 
@@ -26,8 +19,6 @@ function renderHeaderSession() {
     if (currentUser) {
         const isAdmin = currentUser.role === 'admin';
         const roleTag = isAdmin ? '<span class="role-tag-mini admin">Admin</span>' : '<span class="role-tag-mini">Student</span>';
-        
-        // Handle fullname that might be undefined or empty
         const displayName = currentUser.fullname || currentUser.username || 'User';
         const initials = displayName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
         
@@ -182,8 +173,37 @@ const CartManager = {
             `;
         }).join('');
 
-        priceLabel.innerText = new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(this.getTotalPrice());
-        checkoutBtn.disabled = false;
+        const total = this.getTotalPrice();
+const itemCount = this.items.length;
+
+let discountPercent = 0;
+let discountReason = '';
+
+if (itemCount >= 3 && total > 1500) {
+    discountPercent = 15;
+    discountReason = 'ยอดรวมเกิน ฿1,500 และ ซื้อมากกว่า 3 คอร์ส';
+} else if (total > 1500) {
+    discountPercent = 5;
+    discountReason = 'ซื้อมากกว่า 3 คอร์ส';
+} else if (itemCount > 3) {
+    discountPercent = 15;
+    discountReason = 'ยอดรวมเกิน ฿1,500';
+}
+
+if (discountPercent > 0) {
+    const discountAmount = Math.round(total * discountPercent / 100);
+    const finalTotal = total - discountAmount;
+    priceLabel.innerHTML = `
+        <div style="text-align:right;">
+            <div style="text-decoration:line-through; color:#888; font-size:0.85rem;">฿${total.toLocaleString()}</div>
+            <div style="color:#10B981; font-size:1.25rem; font-weight:bold;">฿${finalTotal.toLocaleString()}</div>
+            <div style="color:#10B981; font-size:0.75rem;">🏷️ ${discountReason} ลด ${discountPercent}%</div>
+        </div>
+    `;
+} else {
+    priceLabel.innerText = new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(total);
+}
+checkoutBtn.disabled = false;
     },
 
     toggleCartModal() {
@@ -215,7 +235,7 @@ const CartManager = {
         const courseIds = this.items.map(i => i.id);
 
         const checkoutBtn = document.getElementById('cartCheckoutBtn');
-        if(checkoutBtn) {
+        if (checkoutBtn) {
             checkoutBtn.disabled = true;
             checkoutBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังดำเนินการ...';
         }
@@ -233,28 +253,51 @@ const CartManager = {
             const result = await response.json();
 
             if (response.ok) {
-                showToast("สั่งซื้อสำเร็จ!", result.message, "success");
+                const p = result.pricing;
+
+                // แสดง toast สรุปราคาพร้อม proof จาก Backend
+                const discountLine = p.discountPercent > 0
+                    ? ` | ลด ${p.discountPercent}% = -฿${p.discountAmount} → ฿${p.recalculatedTotal}`
+                    : ' | ไม่มีส่วนลด';
+
+                showToast("สั่งซื้อสำเร็จ!", `ยอดเดิม ฿${p.originalTotal}${discountLine}`, "success");
+
+                // แสดงราคาที่ลดแล้วใน cart modal ก่อนปิด
+                const priceLabel = document.getElementById('cartTotalPrice');
+                if (priceLabel && p.discountPercent > 0) {
+                    priceLabel.innerHTML = `
+                        <span style="text-decoration:line-through; color:#888; font-size:0.9rem;">฿${p.originalTotal}</span>
+                        <span style="color:#10B981; margin-left:8px;">฿${p.recalculatedTotal}</span>
+                        <span style="font-size:0.7rem; color:#10B981; display:block;">${p.discountReason} · ${p.calculatedBy}</span>
+                    `;
+                    await new Promise(r => setTimeout(r, 2000));
+                }
+
                 this.clearCart();
                 this.closeCartModal();
-                
-                // If on index page, refresh courses to show enrolled status
+
                 if (typeof renderCourses === 'function') {
                     renderCourses();
                 } else {
                     setTimeout(() => window.location.href = 'classroom.html', 1500);
                 }
+
             } else if (response.status === 409) {
-                showToast("ไม่สามารถจองได้", result.message, "error");
-            } else if (response.status === 401) {
-                showToast("เซสชันหมดอายุ", "กรุณาเข้าสู่ระบบใหม่", "error");
-                setTimeout(() => window.location.href = 'login.html', 1000);
-            } else {
-                showToast("เกิดข้อผิดพลาด", result.message || "ไม่สามารถทำรายการได้", "error");
-            }
+    if (result.pricing) {
+        const p = result.pricing;
+        const discountLine = p.discountPercent > 0
+            ? ` | ลด ${p.discountPercent}% = -฿${p.discountAmount} → ฿${p.recalculatedTotal}`
+            : ' | ไม่มีส่วนลด';
+        showToast("สมัครไปแล้ว", `ยอดเดิม ฿${p.originalTotal}${discountLine}`, "error");
+    } else {
+        showToast("ไม่สามารถจองได้", result.message, "error");
+    }
+}
+
         } catch (err) {
             showToast("เชื่อมต่อล้มเหลว", "โปรดลองใหม่อีกครั้ง", "error");
         } finally {
-            if(checkoutBtn && this.items.length > 0) {
+            if (checkoutBtn && this.items.length > 0) {
                 checkoutBtn.disabled = false;
                 checkoutBtn.innerHTML = '<i class="fa-solid fa-credit-card"></i> ชำระเงิน / ยืนยันการจอง';
             }
@@ -301,7 +344,6 @@ function highlightActiveLink() {
 
 // --- MODERN PREMIUM TOAST NOTIFICATION SYSTEM ---
 function showToast(title, message, type = 'info') {
-    // Create container if not exists
     let container = document.querySelector('.toast-container');
     if (!container) {
         container = document.createElement('div');
@@ -319,11 +361,9 @@ function showToast(title, message, type = 'info') {
         document.body.appendChild(container);
     }
 
-    // Create toast element
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     
-    // Type specific colors & icons
     let icon = '<i class="fas fa-info-circle"></i>';
     let borderColor = 'var(--accent-cyan)';
     let glowShadow = 'rgba(6, 182, 212, 0.2)';
@@ -365,7 +405,7 @@ function showToast(title, message, type = 'info') {
     `;
 
     toast.innerHTML = `
-        <div style="font-size: 1.5rem; color: ${borderColor === '🏆' ? '#FFF' : borderColor}">${icon}</div>
+        <div style="font-size: 1.5rem; color: ${borderColor}">${icon}</div>
         <div style="flex: 1;">
             <h4 style="font-family: var(--font-heading); font-size: 0.95rem; margin-bottom: 0.25rem;">${title}</h4>
             <p style="font-size: 0.8rem; color: var(--text-secondary);">${message}</p>
@@ -375,25 +415,16 @@ function showToast(title, message, type = 'info') {
 
     container.appendChild(toast);
 
-    // Slide in
-    setTimeout(() => {
-        toast.style.transform = 'translateX(0)';
-    }, 50);
-
-    // Auto remove
+    setTimeout(() => { toast.style.transform = 'translateX(0)'; }, 50);
     setTimeout(() => {
         toast.style.transform = 'translateX(120%)';
-        setTimeout(() => {
-            toast.remove();
-        }, 500);
+        setTimeout(() => { toast.remove(); }, 500);
     }, 4500);
 }
 
-// Make globally available
 window.showToast = showToast;
 
 // --- DYNAMIC INLINE SVG GENERATION FOR BADGES ---
-// In case the system doesn't have local images, we can dynamically build high-fidelity technology icons in SVG!
 const TechSVGIcons = {
     "b-1": `
         <svg viewBox="0 0 100 100" width="100%" height="100%">
@@ -412,7 +443,6 @@ const TechSVGIcons = {
             </defs>
             <circle cx="50" cy="50" r="45" fill="rgba(30, 41, 59, 0.8)" stroke="url(#g-b1)" stroke-width="4" filter="url(#glow-b1)" />
             <polygon points="50,15 80,35 80,68 50,88 20,68 20,35" fill="rgba(56, 189, 248, 0.1)" stroke="url(#g-b1)" stroke-width="2" />
-            <!-- Code Bracket Icon -->
             <path d="M38,42 L28,50 L38,58 M62,42 L72,50 L62,58 M54,34 L46,66" stroke="url(#g-b1)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
             <circle cx="50" cy="50" r="4" fill="#FFF" />
         </svg>
@@ -433,13 +463,10 @@ const TechSVGIcons = {
                 </filter>
             </defs>
             <circle cx="50" cy="50" r="45" fill="rgba(30, 41, 59, 0.8)" stroke="url(#g-b2)" stroke-width="4" filter="url(#glow-b2)" />
-            <!-- CSS Shield -->
             <path d="M50,20 L78,26 L72,68 L50,82 L28,68 L22,26 Z" fill="rgba(6, 182, 212, 0.1)" stroke="url(#g-b2)" stroke-width="3" stroke-linejoin="round" />
-            <!-- Paint Brush -->
             <path d="M40,55 L58,37 L63,42 L45,60 Z" fill="#FFF" />
             <path d="M63,42 L58,37 L61,31 C63,28 68,28 70,30 C72,32 72,37 69,39 Z" fill="url(#g-b2)" />
             <path d="M45,60 C42,63 36,65 32,66 C33,62 35,56 38,53 Z" fill="#E2E8F0" />
-            <!-- Sparks -->
             <path d="M30,30 L34,34 M70,64 L74,68 M68,25 L70,29" stroke="#FFF" stroke-width="2" stroke-linecap="round" />
         </svg>
     `,
@@ -459,9 +486,7 @@ const TechSVGIcons = {
                 </filter>
             </defs>
             <circle cx="50" cy="50" r="45" fill="rgba(30, 41, 59, 0.8)" stroke="url(#g-b3)" stroke-width="4" filter="url(#glow-b3)" />
-            <!-- Hexagon -->
             <polygon points="50,18 78,34 78,66 50,82 22,66 22,34" fill="rgba(245, 158, 11, 0.1)" stroke="url(#g-b3)" stroke-width="3" />
-            <!-- JS Character & Magic Spark -->
             <text x="35" y="62" font-family="'Outfit', sans-serif" font-weight="900" font-size="28" fill="url(#g-b3)">JS</text>
             <path d="M68,36 L64,48 L74,48 L66,64 L68,52 L58,52 Z" fill="#FFF" filter="drop-shadow(0 0 4px rgba(245, 158, 11, 0.8))" />
         </svg>
@@ -483,17 +508,13 @@ const TechSVGIcons = {
                 </filter>
             </defs>
             <circle cx="50" cy="50" r="45" fill="rgba(30, 41, 59, 0.8)" stroke="url(#g-b4)" stroke-width="4" filter="url(#glow-b4)" />
-            <!-- Crown graphic -->
             <path d="M24,65 L76,65 L82,40 L65,52 L50,30 L35,52 L18,40 Z" fill="url(#g-b4)" stroke="#FFF" stroke-width="2" stroke-linejoin="round" />
-            <!-- Crown Base Jewels -->
             <circle cx="32" cy="61" r="2.5" fill="#FFF" />
             <circle cx="50" cy="61" r="2.5" fill="#FFF" />
             <circle cx="68" cy="61" r="2.5" fill="#FFF" />
-            <!-- Tips jewels -->
             <circle cx="18" cy="38" r="3.5" fill="#F43F5E" />
             <circle cx="50" cy="28" r="3.5" fill="#22C55E" />
             <circle cx="82" cy="38" r="3.5" fill="#06B6D4" />
-            <!-- Underline glow -->
             <path d="M30,72 L70,72" stroke="url(#g-b4)" stroke-width="3" stroke-linecap="round" />
             <path d="M40,78 L60,78" stroke="url(#g-b4)" stroke-width="2" stroke-linecap="round" />
         </svg>

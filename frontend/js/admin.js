@@ -91,6 +91,34 @@ function renderAdminCoursesTable(courses) {
         `;
     }).join('');
 }
+async function deleteCourse(courseId) {
+    if (!confirm('ต้องการลบคอร์สนี้ใช่ไหม?')) {
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+
+    try {
+        const response = await fetch(`/api/courses/${courseId}`, {
+            method: 'DELETE',
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert('ลบคอร์สสำเร็จ');
+            location.reload();
+        } else {
+            alert(result.message);
+        }
+    } catch (error) {
+        console.error(error);
+        alert('เกิดข้อผิดพลาด');
+    }
+}
 
 function formatCoursePrice(value) {
     const price = Number(value || 0);

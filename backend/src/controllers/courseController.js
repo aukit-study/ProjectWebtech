@@ -159,19 +159,25 @@ class CourseController {
         }
     }
 
-    // POST /api/checkout - สมัครหลายคอร์สพร้อมกันจากตะกร้า
+    // POST /api/courses/checkout - Gatekeeper Pattern: คำนวณราคาฝั่ง Server
     static async checkoutCart(req, res, next) {
-        const db = req.app.locals.db;
-        const userId = req.user.id;
-        const { courseIds } = req.body;
+    const db     = req.app.locals.db;
+    const userId = req.user.id;
+    const { courseIds } = req.body;
 
-        if (!Array.isArray(courseIds) || courseIds.length === 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'ตะกร้าว่างเปล่า หรือรูปแบบข้อมูลไม่ถูกต้อง'
-            });
-        }
+    if (!Array.isArray(courseIds) || courseIds.length === 0) {
+        return res.status(400).json({
+            success: false,
+            message: 'ตะกร้าว่างเปล่า หรือรูปแบบข้อมูลไม่ถูกต้อง'
+        });
+    }
 
+    try {
+        // ── Step 1: ให้ DiscountService คำนวณราคาจริงจาก DB ──
+        const DiscountService = require('../services/discountService');
+        const breakdown = await DiscountService.calculateCheckout(db, courseIds);
+
+        // ── Step 2: Enroll แต่ละคอร์ส ──
         const results = [];
         let successCount = 0;
 
@@ -181,25 +187,46 @@ class CourseController {
                 results.push({ id, status: 'success' });
                 successCount++;
             } catch (error) {
-                // If it fails (e.g. ALREADY_ENROLLED, COURSE_FULL), we just record it and continue
                 results.push({ id, status: 'failed', reason: error.message });
             }
         }
 
-        if (successCount === 0 && courseIds.length > 0) {
-            return res.status(409).json({
-                success: false,
-                message: 'ไม่สามารถสั่งซื้อคอร์สได้เลย อาจจะเต็มหรือสมัครไปแล้วทั้งหมด',
-                results
-            });
+        if (successCount === 0) {
+    return res.status(409).json({
+        success: false,
+        message: 'ไม่สามารถสั่งซื้อคอร์สได้เลย อาจจะเต็มหรือสมัครไปแล้วทั้งหมด',
+        results,
+        pricing: {
+            originalTotal:     breakdown.originalTotal,
+            discountPercent:   breakdown.discountPercent,
+            discountReason:    breakdown.discountReason,
+            discountAmount:    breakdown.discountAmount,
+            recalculatedTotal: breakdown.recalculatedTotal,
+            calculatedAt:      breakdown.calculatedAt,
+            calculatedBy:      breakdown.calculatedBy
         }
+    });
+}
 
+        // ── Step 3: Return recalculated total พร้อม proof ──
         return res.status(200).json({
             success: true,
             message: `สั่งซื้อสำเร็จ ${successCount} คอร์ส`,
-            results
+            enrollmentResults: results,
+            // 👇 หลักฐานว่าคำนวณฝั่ง Backend (Gatekeeper Pattern)
+            pricing: {
+                originalTotal:      breakdown.originalTotal,
+                discountPercent:    breakdown.discountPercent,
+                discountReason:     breakdown.discountReason,
+                discountAmount:     breakdown.discountAmount,
+                recalculatedTotal:  breakdown.recalculatedTotal,
+                calculatedAt:       breakdown.calculatedAt,
+                calculatedBy:       breakdown.calculatedBy
+            }
         });
-    }
-}
 
+    } catch (error) {
+        next(error);
+    }
+}}
 module.exports = CourseController;
