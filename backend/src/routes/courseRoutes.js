@@ -9,6 +9,7 @@ router.get('/:id', CourseController.getCourseById);
 
 // 🔒 Protected Routes - ต้อง login
 // verifyToken: ตรวจสอบ JWT token
+router.post('/checkout', verifyToken, CourseController.checkoutCart);
 router.post('/:id/enroll', verifyToken, CourseController.enrollInCourse);
 
 // 🛡️ Admin Only Routes - ต้อง login และเป็น admin

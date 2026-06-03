@@ -293,67 +293,79 @@
 
     <!-- Main Content Container -->
     <main>
-        <!-- Course Header & Classroom Info Summary -->
-        <div class="classroom-header-panel">
-            <div>
-                <span id="classroomCourseCategory" class="role-tag-mini" style="margin-bottom: 0.5rem; display: inline-block;">LOADING...</span>
-                <h2 id="classroomCourseTitle" style="font-family: var(--font-heading); font-size: 1.6rem;">กำลังโหลดคอร์สเรียน...</h2>
+        <!-- Enrolled Courses Overview (Shown if no courseId) -->
+        <div id="enrolledCoursesOverview" style="display: none;">
+            <div class="section-title-wrapper">
+                <h2 class="section-title"><i class="fa-solid fa-book-open"></i> ห้องเรียนของคุณ (คอร์สที่สมัครไว้)</h2>
             </div>
-            <!-- Course Completion Progress Bar -->
-            <div style="min-width: 280px;" id="courseOverallProgressContainer">
-                <!-- Loaded Dynamically -->
+            <div id="enrolledCoursesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 2rem;">
+                <!-- Rendered dynamically by classroom.js -->
             </div>
         </div>
 
-        <!-- Split Layout Classroom -->
-        <div class="classroom-container">
-            <!-- Left Side: Custom Video Player and Lesson Contents -->
-            <div>
-                <div class="video-player-card">
-                    <div class="video-wrapper">
-                        <!-- Custom Cyber IDE Media Player Mockup -->
-                        <div class="custom-mock-player" id="classroomMediaPlayer">
-                            <div class="mock-progress-line"></div>
-                            <div class="mock-play-btn" onclick="togglePlaySimulation()">
-                                <i class="fa-solid fa-play" id="playIconSim"></i>
-                            </div>
-                            <div class="mock-player-title" id="mockPlayerTitleText">คลิกเพื่อรับชมบทเรียน</div>
-                            <div class="mock-player-controls">
-                                <div style="font-size: 0.8rem; color: var(--text-muted);">
-                                    <i class="fa-solid fa-circle" style="color:var(--accent-pink); font-size:0.5rem; margin-right:0.4rem; animation: blink 1s infinite;"></i> SIMULATION MODE
-                                </div>
-                                <div style="display:flex; gap: 1rem; color: var(--text-secondary); font-size: 0.9rem;">
-                                    <i class="fa-solid fa-volume-high"></i>
-                                    <i class="fa-solid fa-cog"></i>
-                                    <i class="fa-solid fa-expand"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+        <div id="classroomMainContent" style="display: none;">
+            <!-- Course Header & Classroom Info Summary -->
+            <div class="classroom-header-panel">
+                <div>
+                    <span id="classroomCourseCategory" class="role-tag-mini" style="margin-bottom: 0.5rem; display: inline-block;">LOADING...</span>
+                    <h2 id="classroomCourseTitle" style="font-family: var(--font-heading); font-size: 1.6rem;">กำลังโหลดคอร์สเรียน...</h2>
                 </div>
-
-                <div class="lesson-content-card">
-                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; flex-wrap:wrap; gap:1rem;">
-                        <div>
-                            <h3 id="currentLessonTitle" style="font-size:1.4rem;">เลือกบทเรียนเพื่อศึกษา</h3>
-                            <p style="color:var(--text-muted); font-size: 0.85rem; margin-top:0.25rem;">หมวดหมู่: <span id="currentLessonCourseName">Web Tech</span></p>
-                        </div>
-                        <button class="btn btn-success" id="markAsCompletedBtn" onclick="handleMarkCompletedClick()" disabled>
-                            <i class="fa-regular fa-circle-check"></i> Mark as Completed
-                        </button>
-                    </div>
-                    <div style="border-top: 1px solid var(--border-color); padding-top:1.5rem; margin-top:1rem; color:var(--text-secondary); font-size: 0.95rem;" id="currentLessonDescription">
-                        คลิกเลือกหัวข้อการเรียนรู้ทางขวามือเพื่อเริ่มต้นศึกษาบทเรียนทันที ระบบความคืบหน้าจะบันทึกสถานะการเรียนลง LocalStorage โดยอัตโนมัติ เพื่อนำไปคิดคำนวณถ้วยรางวัลในการสะสมเหรียญตราเกียรติยศต่อไป
-                    </div>
+                <!-- Course Completion Progress Bar -->
+                <div style="min-width: 280px;" id="courseOverallProgressContainer">
+                    <!-- Loaded Dynamically -->
                 </div>
             </div>
 
-            <!-- Right Side: Lessons Timeline -->
-            <div class="timeline-card">
-                <h3 style="font-size:1.15rem; font-family:var(--font-heading); border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;"><i class="fa-solid fa-list-ol" style="color:var(--accent-purple); margin-right:0.5rem;"></i> แผนการสอน (Lessons)</h3>
-                <ul class="timeline-list" id="lessonsTimelineContainer">
-                    <!-- Rendered Dynamically -->
-                </ul>
+            <!-- Split Layout Classroom -->
+            <div class="classroom-container">
+                <!-- Left Side: Custom Video Player and Lesson Contents -->
+                <div>
+                    <div class="video-player-card">
+                        <div class="video-wrapper">
+                            <!-- Custom Cyber IDE Media Player Mockup -->
+                            <div class="custom-mock-player" id="classroomMediaPlayer">
+                                <div class="mock-progress-line"></div>
+                                <div class="mock-play-btn" onclick="togglePlaySimulation()">
+                                    <i class="fa-solid fa-play" id="playIconSim"></i>
+                                </div>
+                                <div class="mock-player-title" id="mockPlayerTitleText">คลิกเพื่อรับชมบทเรียน</div>
+                                <div class="mock-player-controls">
+                                    <div style="font-size: 0.8rem; color: var(--text-muted);">
+                                        <i class="fa-solid fa-circle" style="color:var(--accent-pink); font-size:0.5rem; margin-right:0.4rem; animation: blink 1s infinite;"></i> SIMULATION MODE
+                                    </div>
+                                    <div style="display:flex; gap: 1rem; color: var(--text-secondary); font-size: 0.9rem;">
+                                        <i class="fa-solid fa-volume-high"></i>
+                                        <i class="fa-solid fa-cog"></i>
+                                        <i class="fa-solid fa-expand"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lesson-content-card">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:1rem; flex-wrap:wrap; gap:1rem;">
+                            <div>
+                                <h3 id="currentLessonTitle" style="font-size:1.4rem;">เลือกบทเรียนเพื่อศึกษา</h3>
+                                <p style="color:var(--text-muted); font-size: 0.85rem; margin-top:0.25rem;">หมวดหมู่: <span id="currentLessonCourseName">Web Tech</span></p>
+                            </div>
+                            <button class="btn btn-success" id="markAsCompletedBtn" onclick="handleMarkCompletedClick()" disabled>
+                                <i class="fa-regular fa-circle-check"></i> Mark as Completed
+                            </button>
+                        </div>
+                        <div style="border-top: 1px solid var(--border-color); padding-top:1.5rem; margin-top:1rem; color:var(--text-secondary); font-size: 0.95rem;" id="currentLessonDescription">
+                            คลิกเลือกหัวข้อการเรียนรู้ทางขวามือเพื่อเริ่มต้นศึกษาบทเรียนทันที ระบบความคืบหน้าจะบันทึกสถานะการเรียนลง LocalStorage โดยอัตโนมัติ เพื่อนำไปคิดคำนวณถ้วยรางวัลในการสะสมเหรียญตราเกียรติยศต่อไป
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Side: Lessons Timeline -->
+                <div class="timeline-card">
+                    <h3 style="font-size:1.15rem; font-family:var(--font-heading); border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;"><i class="fa-solid fa-list-ol" style="color:var(--accent-purple); margin-right:0.5rem;"></i> แผนการสอน (Lessons)</h3>
+                    <ul class="timeline-list" id="lessonsTimelineContainer">
+                        <!-- Rendered Dynamically -->
+                    </ul>
+                </div>
             </div>
         </div>
     </main>

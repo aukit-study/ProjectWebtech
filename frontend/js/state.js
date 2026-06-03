@@ -394,7 +394,7 @@ const WebtechState = {
     checkoutWorkshopOrder(courseId) {
         const courses = this.getCourses();
         const courseIndex = courses.findIndex(c => c.id === courseId);
-        
+
         if (courseIndex === -1) {
             return { success: false, status: 404, message: "ไม่พบเวิร์กชอปที่ระบุ" };
         }
@@ -413,13 +413,47 @@ const WebtechState = {
         // กรณีผ่านเกณฑ์: บันทึกข้อมูลและทำระบบ "Bypass Payment" อัตโนมัติ
         courses[courseIndex].current_bookings += 1;
         this.saveCourses(courses);
-        
+
         return {
             success: true,
             status: 200,
             message: "จองเวิร์กชอปสำเร็จ! (ระบบทำการข้ามขั้นตอนชำระเงินให้คุณโดยอัตโนมัติ)",
             course: courses[courseIndex]
         };
+    },
+
+    markLessonComplete(courseId, lessonId, isCompleted) {
+        const courses = this.getCourses();
+        const course = courses.find(c => c.id === courseId);
+        if (!course) return { success: false, message: "Course not found" };
+
+        const lesson = course.lessons ? course.lessons.find(l => l.id === lessonId) : null;
+        if (!lesson) return { success: false, message: "Lesson not found" };
+
+        lesson.isCompleted = isCompleted;
+        this.saveCourses(courses);
+
+        const unlockedJustNow = [];
+        const currentUser = this.getCurrentUser();
+
+        if (currentUser && isCompleted) {
+            const users = getStorage(STATE_KEYS.USERS, DEFAULT_USERS);
+            const dbUser = users.find(u => u.username === currentUser.username);
+
+            if (dbUser) {
+                // Check if they just got their first completion (Badge b-1: First Step)
+                if (!dbUser.unlockedBadges) dbUser.unlockedBadges = [];
+                if (!dbUser.unlockedBadges.includes("b-1")) {
+                    dbUser.unlockedBadges.push("b-1");
+                    unlockedJustNow.push("b-1");
+                }
+
+                setStorage(STATE_KEYS.USERS, users);
+                this.setCurrentUser(dbUser);
+            }
+        }
+
+        return { success: true, course, unlockedJustNow };
     }
 };
 

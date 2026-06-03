@@ -11,27 +11,100 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const courseId = urlParams.get('courseId');
 
-    // 2. Load Active Course
-    loadClassroomCourse(courseId);
-    
+    const overviewEl = document.getElementById('enrolledCoursesOverview');
+    const mainEl = document.getElementById('classroomMainContent');
+
+    if (!courseId) {
+        if (overviewEl) overviewEl.style.display = 'block';
+        if (mainEl) mainEl.style.display = 'none';
+        renderEnrolledCoursesOverview();
+    } else {
+        if (overviewEl) overviewEl.style.display = 'none';
+        if (mainEl) mainEl.style.display = 'block';
+        // 2. Load Active Course
+        loadClassroomCourse(courseId);
+    }
+
     // 3. Setup Confetti Canvas Size
     initConfettiCanvas();
 });
 
+async function renderEnrolledCoursesOverview() {
+    const container = document.getElementById('enrolledCoursesGrid');
+    if (!container) return;
+
+    container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: var(--text-secondary);">กำลังโหลดคอร์สที่สมัครไว้...</div>`;
+
+    try {
+        const token = localStorage.getItem('webtech_token');
+        const headers = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
+        const response = await fetch('/api/courses', { headers });
+        const data = await response.json();
+        const allCourses = data.courses || [];
+        
+        // Filter those where is_enrolled > 0
+        const enrolledCourses = allCourses.filter(c => c.is_enrolled > 0);
+
+        if (enrolledCourses.length === 0) {
+            container.innerHTML = `
+                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed var(--border-color);">
+                    <i class="fa-solid fa-graduation-cap" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                    <p style="color: var(--text-secondary); font-size: 1.1rem;">คุณยังไม่ได้สมัครเรียนคอร์สใดเลย</p>
+                    <a href="index.html" class="btn btn-primary" style="margin-top: 1.5rem;">ไปเลือกคอร์สเรียนกัน!</a>
+                </div>
+            `;
+            return;
+        }
+
+        const stateCourses = window.WebtechState.getCourses();
+
+        container.innerHTML = enrolledCourses.map(course => {
+            const stateCourse = stateCourses.find(c => c.id === `c-${course.id}`);
+            const progress = stateCourse ? window.WebtechState.getCourseProgress(stateCourse) : 0;
+            const lessonsCount = stateCourse && stateCourse.lessons ? stateCourse.lessons.length : 0;
+            const completedCount = stateCourse && stateCourse.lessons ? stateCourse.lessons.filter(l => l.isCompleted).length : 0;
+            let barColor = progress === 100 ? 'var(--accent-green)' : 'var(--accent-purple)';
+
+            return `
+                <div class="card floating-ui" style="display:flex; flex-direction:column; cursor:pointer;" onclick="window.location.href='classroom.html?courseId=c-${course.id}'">
+                    <div style="height: 140px; border-radius: 8px; background: ${course.cover_image || 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)'}; margin-bottom: 1rem; display:flex; align-items:flex-end; padding:1rem; background-size: cover; background-position: center;">
+                        <span class="role-tag-mini" style="background:rgba(0,0,0,0.6); color:white;">${course.category}</span>
+                    </div>
+                    <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">${course.title}</h3>
+                    
+                    <div class="progress-container" style="margin-top: auto; padding-top: 1rem;">
+                        <div class="progress-header" style="margin-bottom:0.4rem;">
+                            <span style="font-size:0.8rem;">ความก้าวหน้า</span>
+                            <span style="font-size:0.8rem; color:${barColor}; font-weight:700;">${progress}% (${completedCount}/${lessonsCount})</span>
+                        </div>
+                        <div class="progress-track" style="height:6px;">
+                            <div class="progress-bar" style="width: ${progress}%; background:${barColor}; box-shadow:0 0 5px ${barColor};"></div>
+                        </div>
+                    </div>
+                    
+                    <a href="classroom.html?courseId=c-${course.id}" class="btn btn-blue btn-sm" style="margin-top: 1rem; width: 100%; text-align: center; justify-content: center;">
+                        <i class="fa-solid fa-circle-play"></i> เข้าเรียน
+                    </a>
+                </div>
+            `;
+        }).join('');
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #EF4444;">เกิดข้อผิดพลาดในการโหลดคอร์สเรียนของคุณ</div>`;
+    }
+}
+
 // --- LOAD COURSE AND DEFAULT FIRST LESSON ---
 function loadClassroomCourse(courseId) {
     const courses = window.WebtechState.getCourses();
-    
+
     // If no course ID or course doesn't exist, default to the first one available
     activeCourse = courses.find(c => c.id === courseId);
     if (!activeCourse) {
-        if (courses.length > 0) {
-            activeCourse = courses[0];
-        } else {
-            // Edge case: no courses in database
-            renderNoCoursesState();
-            return;
-        }
+        renderNoCoursesState();
+        return;
     }
 
     // Render Course UI Titles
@@ -92,7 +165,7 @@ function selectLesson(lessonId) {
     // Update Detail Panel
     document.getElementById('currentLessonTitle').innerText = activeLesson.title;
     document.getElementById('currentLessonCourseName').innerText = activeCourse.title;
-    
+
     // Simulate premium custom technical description texts
     document.getElementById('currentLessonDescription').innerHTML = `
         <p style="margin-bottom: 1rem;">ยินดีต้อนรับเข้าสู่หัวข้อ <strong>${activeLesson.title}</strong> ในคอร์สเรียนนี้เราจะเน้นสร้างทักษะการลงมือทำ (Hands-on) ผ่านความรู้ด้านเทคโนโลยีเว็บระดับสูง</p>
@@ -103,12 +176,17 @@ function selectLesson(lessonId) {
     `;
 
     // Manage "Mark as Completed" button state
-    const completeBtn = document.getElementById('markCompletedBtn');
-    if (activeLesson.isCompleted) {
-        completeBtn.innerHTML = '<i class="fa-solid fa-check-circle"></i> เรียนจบแล้ว';
-        completeBtn.className = 'btn btn-secondary';
-        completeBtn.disabled = true;
-    } else {  completeBtn.className = 'btn btn-success';
+    const completeBtn = document.getElementById('markAsCompletedBtn');
+    if (completeBtn) {
+        if (activeLesson.isCompleted) {
+            completeBtn.innerHTML = '<i class="fa-solid fa-check-circle"></i> เรียนจบแล้ว';
+            completeBtn.className = 'btn btn-secondary';
+            completeBtn.disabled = true;
+        } else {
+            completeBtn.className = 'btn btn-success';
+            completeBtn.innerHTML = '<i class="fa-regular fa-circle-check"></i> Mark as Completed';
+            completeBtn.disabled = false;
+        }
     }
 
     // Reset Player Mockup Play State
@@ -146,9 +224,9 @@ function handleMarkCompletedClick() {
 
     // Toggle complete state
     const newStatus = !activeLesson.isCompleted;
-    
+
     const result = window.WebtechState.markLessonComplete(activeCourse.id, activeLesson.id, newStatus);
-    
+
     if (result.success) {
         // Sync active objects
         activeCourse = result.course;
@@ -161,7 +239,7 @@ function handleMarkCompletedClick() {
 
         if (newStatus) {
             window.showToast("สำเร็จบทเรียน!", `คุณเรียนผ่านหัวข้อ "${activeLesson.title}" แล้ว`, "success");
-            
+
             // Check if course completed 100%
             const currentProgress = window.WebtechState.getCourseProgress(activeCourse);
             if (currentProgress === 100) {
@@ -235,7 +313,7 @@ function closeBadgeModal() {
 function playLevelUpSound() {
     try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
+
         // Tone 1: C5
         const osc1 = audioCtx.createOscillator();
         const gain1 = audioCtx.createGain();
@@ -291,7 +369,7 @@ function initConfettiCanvas() {
     confettiCanvas = document.getElementById('confettiCanvas');
     if (!confettiCanvas) return;
     ctx = confettiCanvas.getContext('2d');
-    
+
     window.addEventListener('resize', resizeConfettiCanvas);
     resizeConfettiCanvas();
 }
@@ -326,9 +404,9 @@ function triggerConfettiExplosion() {
 
 function animateConfetti() {
     if (!confettiActive || !ctx) return;
-    
+
     ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-    
+
     let livingParticles = 0;
 
     particles.forEach(p => {
@@ -343,7 +421,7 @@ function animateConfetti() {
             ctx.translate(p.x, p.y);
             ctx.rotate(p.rotation * Math.PI / 180);
             ctx.fillStyle = p.color;
-            ctx.fillRect(-p.r/2, -p.r/2, p.r, p.r);
+            ctx.fillRect(-p.r / 2, -p.r / 2, p.r, p.r);
             ctx.restore();
         }
     });
