@@ -1,10 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const CourseController = require('../controllers/courseController');
-const { verifyToken, requireRole } = require('../middleware/authMiddleware');
+const { verifyToken, requireRole, optionalToken } = require('../middleware/authMiddleware');
 
-// 📚 Public Routes - ไม่ต้อง login
-router.get('/', CourseController.getAllCourses);
+// 📚 Public Routes - ไม่ต้อง login (รองรับ optionalToken)
+router.get('/', optionalToken, CourseController.getAllCourses);
 router.get('/:id', CourseController.getCourseById);
 
 // 🔒 Protected Routes - ต้อง login

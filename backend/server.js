@@ -16,10 +16,12 @@ initDatabase()
 
         const authRoutes = require('./src/routes/authRoutes');
         const courseRoutes = require('./src/routes/courseRoutes');
+        const adminRoutes = require('./src/routes/adminRoutes');
         const { handleError } = require('./src/middleware/errorMiddleware');
         
         app.use('/api/auth', authRoutes);
-        app.use('/api/courses', courseRoutes);   
+        app.use('/api/courses', courseRoutes);
+        app.use('/api/admin', adminRoutes);
         
         // 🛡️ Global Error Handler (ต้องอยู่หลัง API routes เสมอ)
         app.use(handleError);

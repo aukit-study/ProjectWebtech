@@ -2,12 +2,12 @@
 const CourseService = require('../services/courseService');
 
 class CourseController {
-    // GET /api/courses - ดึงรายการคอร์สทั้งหมด (public)
     static async getAllCourses(req, res, next) {
         const db = req.app.locals.db;
+        const userId = req.user ? req.user.id : null;
 
         try {
-            const courses = await CourseService.getAllCourses(db);
+            const courses = await CourseService.getAllCourses(db, userId);
             
             return res.status(200).json({
                 success: true,
@@ -47,7 +47,7 @@ class CourseController {
     // POST /api/courses - สร้างคอร์สใหม่ (admin only)
     static async createCourse(req, res, next) {
         const db = req.app.locals.db;
-        const { title, category, difficulty, duration, description, cover_image, max_capacity } = req.body;
+        const { title, category, difficulty, duration, description, cover_image, max_capacity, price } = req.body;
 
         // Validation
         if (!title || !category || !difficulty || !duration) {
@@ -57,10 +57,18 @@ class CourseController {
             });
         }
 
+        const numericPrice = price !== undefined ? Number(price) : 0;
+        if (Number.isNaN(numericPrice) || numericPrice < 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Price must be a valid non-negative number.'
+            });
+        }
+
         try {
             const courseId = await CourseService.createCourse(
                 db, 
-                { title, category, difficulty, duration, description, cover_image, max_capacity }, 
+                { title, category, difficulty, duration, description, cover_image, max_capacity, price: numericPrice }, 
                 req.user.id
             );
 
@@ -78,13 +86,21 @@ class CourseController {
     static async updateCourse(req, res, next) {
         const db = req.app.locals.db;
         const { id } = req.params;
-        const { title, category, difficulty, duration, description, cover_image, max_capacity } = req.body;
+        const { title, category, difficulty, duration, description, cover_image, max_capacity, price } = req.body;
+
+        const numericPrice = price !== undefined ? Number(price) : undefined;
+        if (numericPrice !== undefined && (Number.isNaN(numericPrice) || numericPrice < 0)) {
+            return res.status(400).json({
+                success: false,
+                message: 'Price must be a valid non-negative number.'
+            });
+        }
 
         try {
             await CourseService.updateCourse(
                 db, 
                 id, 
-                { title, category, difficulty, duration, description, cover_image, max_capacity }
+                { title, category, difficulty, duration, description, cover_image, max_capacity, price: numericPrice }
             );
 
             return res.status(200).json({

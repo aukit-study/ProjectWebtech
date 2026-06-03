@@ -17,7 +17,7 @@ class AuthController {
                 user: newUser
             });
         } catch (error) {
-            // Graceful Error Handling: จัดการ Error แต่ละประเภทโดยไม่พ่น Stack Trace ใส่หน้าเว็บ [cite: 52]
+            // Graceful Error Handling: จัดการ Error แต่ละประเภทโดยไม่พ่น Stack Trace ใส่หน้าเว็บ
             if (error.message === 'MISSING_FIELDS') {
                 return res.status(400).json({ success: false, message: 'Please fill in all fields.' });
             }
@@ -26,7 +26,7 @@ class AuthController {
             }
             
             // Error อื่นๆ ของระบบ
-            console.error('Registration Error:', error); // Log ไว้ฝั่ง Developer [cite: 52]
+            console.error('Registration Error:', error); // Log ไว้ฝั่ง Developer
             return res.status(500).json({ success: false, message: 'Internal server error.' });
         }
     }
@@ -47,7 +47,7 @@ class AuthController {
                 user: result.user
             });
         } catch (error) {
-            // Graceful Error Handling: ซ่อน Stack Trace จัดการส่ง Error Message ที่เหมาะสม [cite: 52]
+            // Graceful Error Handling: ซ่อน Stack Trace จัดการส่ง Error Message ที่เหมาะสม
             if (error.message === 'MISSING_FIELDS') {
                 return res.status(400).json({ success: false, message: 'Please enter both username and password.' });
             }
@@ -55,7 +55,7 @@ class AuthController {
                 return res.status(401).json({ success: false, message: 'Invalid username or password.' });
             }
             
-            console.error('Login Error:', error); // Log ให้ผู้พัฒนาเห็นหลังบ้าน [cite: 52]
+            console.error('Login Error:', error); // Log ให้ผู้พัฒนาเห็นหลังบ้าน
             return res.status(500).json({ success: false, message: 'Internal server error.' });
         }
     }

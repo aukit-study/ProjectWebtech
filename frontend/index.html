@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -32,7 +33,7 @@
             width: 200%;
             height: 200%;
             background: radial-gradient(circle at 80% 20%, rgba(6, 182, 212, 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+                radial-gradient(circle at 20% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
             z-index: -1;
             pointer-events: none;
         }
@@ -59,7 +60,7 @@
             padding: 1.25rem;
             font-size: 0.85rem;
             color: #A78BFA;
-            box-shadow: 0 15px 30px rgba(0,0,0,0.5), 0 0 20px rgba(6, 182, 212, 0.15);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.5), 0 0 20px rgba(6, 182, 212, 0.15);
             min-height: 220px;
         }
 
@@ -76,17 +77,38 @@
             height: 10px;
             border-radius: 50%;
         }
-        .dot-red { background: #EF4444; }
-        .dot-yellow { background: #F59E0B; }
-        .dot-green { background: #10B981; }
+
+        .dot-red {
+            background: #EF4444;
+        }
+
+        .dot-yellow {
+            background: #F59E0B;
+        }
+
+        .dot-green {
+            background: #10B981;
+        }
 
         .terminal-code {
             color: #F9FAFB;
         }
-        .code-keyword { color: #EC4899; }
-        .code-string { color: #10B981; }
-        .code-comment { color: var(--text-muted); }
-        .code-fn { color: var(--accent-cyan); }
+
+        .code-keyword {
+            color: #EC4899;
+        }
+
+        .code-string {
+            color: #10B981;
+        }
+
+        .code-comment {
+            color: var(--text-muted);
+        }
+
+        .code-fn {
+            color: var(--accent-cyan);
+        }
 
         /* Catalog Filters */
         .filter-container {
@@ -101,13 +123,14 @@
             border-radius: 50px;
             font-weight: 600;
             font-size: 0.9rem;
-            background: rgba(255,255,255,0.03);
+            background: rgba(255, 255, 255, 0.03);
             border: 1px solid var(--border-color);
             color: var(--text-secondary);
             transition: var(--transition-fast);
         }
 
-        .filter-btn:hover, .filter-btn.active {
+        .filter-btn:hover,
+        .filter-btn.active {
             background: var(--accent-purple);
             color: white;
             border-color: var(--accent-purple);
@@ -159,7 +182,7 @@
             font-weight: 800;
             text-transform: uppercase;
         }
-        
+
         .course-card-difficulty.Advanced {
             background: rgba(236, 72, 153, 0.2);
             color: var(--accent-pink);
@@ -172,7 +195,7 @@
             right: 1rem;
             font-size: 0.8rem;
             font-weight: 600;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
             padding: 0.2rem 0.5rem;
             border-radius: 4px;
         }
@@ -219,12 +242,14 @@
             .hero-banner {
                 grid-template-columns: 1fr;
             }
+
             .terminal-mockup {
                 display: none;
             }
         }
     </style>
 </head>
+
 <body>
 
     <!-- Header Navigation -->
@@ -254,9 +279,12 @@
     <main>
         <section class="hero-banner floating-ui">
             <div class="hero-content">
-                <span class="gradient-text" style="font-weight:800; font-size:1.1rem; text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:0.75rem;">🚀 พัฒนาทักษะการเขียนโปรแกรมของคุณ</span>
+                <span class="gradient-text"
+                    style="font-weight:800; font-size:1.1rem; text-transform:uppercase; letter-spacing:0.1em; display:block; margin-bottom:0.75rem;">🚀
+                    พัฒนาทักษะการเขียนโปรแกรมของคุณ</span>
                 <h1>เปลี่ยนจากศูนย์สู่ <span class="gradient-text">Pro Developer</span></h1>
-                <p>เรียนรู้วิชาการทำเว็บจากหลักสูตรคุณภาพที่ปูพื้นฐานตั้งแต่ HTML5, CSS3, Javascript ไปจนถึงการเขียน Server Backend อย่างเป็นระบบ พร้อมกลไกความคืบหน้าแบบเกมิฟิเคชันสะสมถ้วยรางวัลจริง!</p>
+                <p>เรียนรู้วิชาการทำเว็บจากหลักสูตรคุณภาพที่ปูพื้นฐานตั้งแต่ HTML5, CSS3, Javascript ไปจนถึงการเขียน
+                    Server Backend อย่างเป็นระบบ พร้อมกลไกความคืบหน้าแบบเกมิฟิเคชันสะสมถ้วยรางวัลจริง!</p>
                 <div style="display:flex; gap:1rem;">
                     <a href="#catalog" class="btn btn-primary"><i class="fa-solid fa-rocket"></i> เริ่มเรียนฟรีเลย</a>
                     <a href="login.html" class="btn btn-secondary"><i class="fa-solid fa-user-plus"></i> สมัครสมาชิก</a>
@@ -288,25 +316,42 @@
             <div class="section-title-wrapper" style="margin-bottom: 2rem;">
                 <div>
                     <h2 class="section-title">คอร์สเรียนและเวิร์กชอปทั้งหมดในระบบ</h2>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">คลิกจองเวิร์กชอป ทำแบบทดสอบ และปลดล็อกรางวัลระบบเกมิฟิเคชัน</p>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">คลิกจองเวิร์กชอป ทำแบบทดสอบ
+                        และปลดล็อกรางวัลระบบเกมิฟิเคชัน</p>
                 </div>
             </div>
 
-            <div style="background: rgba(21, 31, 50, 0.45); backdrop-filter: blur(12px); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: var(--border-radius-lg); margin-bottom: 2.5rem; display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
-                
+            <div
+                style="background: rgba(21, 31, 50, 0.45); backdrop-filter: blur(12px); border: 1px solid var(--border-color); padding: 1.25rem; border-radius: var(--border-radius-lg); margin-bottom: 2.5rem; display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: center; justify-content: space-between;">
+
                 <div class="filter-container" style="margin-bottom: 0; padding: 0;">
                     <button class="filter-btn active" id="btn-cat-ALL" onclick="filterCatalog('ALL')">ทั้งหมด</button>
                     <button class="filter-btn" id="btn-cat-HTML" onclick="filterCatalog('HTML/CSS')">HTML & CSS</button>
                     <button class="filter-btn" id="btn-cat-JS" onclick="filterCatalog('JavaScript')">JavaScript</button>
+                    <button class="filter-btn" id="btn-cat-Backend" onclick="filterCatalog('Backend')">Backend</button>
+                    <button class="filter-btn" id="btn-cat-Database"
+                        onclick="filterCatalog('Database')">Database</button>
+                    <button class="filter-btn" id="btn-cat-DevOps" onclick="filterCatalog('DevOps')">DevOps</button>
+
                 </div>
 
-                <div style="display: flex; gap: 1rem; align-items: center; flex: 1; max-width: 500px; min-width: 280px;">
+                <div
+                    style="display: flex; gap: 1rem; align-items: center; flex: 1; max-width: 500px; min-width: 280px;">
                     <div style="position: relative; flex: 1;">
-                        <span style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"><i class="fa-solid fa-magnifying-glass"></i></span>
-                        <input type="text" id="filterSearchKeyword" class="form-input" placeholder="ค้นหาชื่อคอร์ส (Debounce Active)..." style="padding-left: 2.5rem; height: 42px; border-radius: 50px; font-size: 0.85rem; background: rgba(0,0,0,0.2);">
+                        <span
+                            style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"><i
+                                class="fa-solid fa-magnifying-glass"></i></span>
+                        <input type="text" id="filterSearchKeyword" class="form-input"
+                            placeholder="ค้นหาชื่อคอร์ส (Debounce Active)..."
+                            style="padding-left: 2.5rem; height: 42px; border-radius: 50px; font-size: 0.85rem; background: rgba(0,0,0,0.2);">
                     </div>
-                    <select id="filterPriceRange" class="form-input" style="width: 140px; height: 42px; border-radius: 50px; font-size: 0.85rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 0 1rem;">
-                        <option value="ALL">ราคา: ฟรี (Bypass)</option>
+                    <select id="filterPriceRange" class="form-input"
+                        style="width: 180px; height: 42px; border-radius: 50px; font-size: 0.85rem; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 0 1rem;">
+                        <option value="ALL">ราคา: ทุกช่วง</option>
+                        <option value="FREE">ฟรี</option>
+                        <option value="BUDGET">฿1 - ฿500</option>
+                        <option value="STANDARD">฿501 - ฿1,000</option>
+                        <option value="PREMIUM">฿1,001 ขึ้นไป</option>
                     </select>
                 </div>
 
@@ -329,12 +374,21 @@
     <script src="js/main.js"></script>
     <script>
         let selectedCategory = 'ALL';
+        let selectedPriceRange = 'ALL';
         let searchTimeoutToken = null;
         let allCourses = [];
 
         document.addEventListener('DOMContentLoaded', () => {
             // โหลดคอร์สจาก API ตอนหน้าโหลด
             renderCourses();
+
+            const priceRange = document.getElementById('filterPriceRange');
+            if (priceRange) {
+                priceRange.addEventListener('change', () => {
+                    selectedPriceRange = priceRange.value;
+                    renderCourses();
+                });
+            }
 
             // Debounce Search
             const searchInput = document.getElementById('filterSearchKeyword');
@@ -353,7 +407,7 @@
 
             // อัปเดต active button
             document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-            const btnMap = { 'ALL': 'btn-cat-ALL', 'HTML/CSS': 'btn-cat-HTML', 'JavaScript': 'btn-cat-JS' };
+            const btnMap = { 'ALL': 'btn-cat-ALL', 'HTML/CSS': 'btn-cat-HTML', 'JavaScript': 'btn-cat-JS', 'Backend': 'btn-cat-Backend', 'Database': 'btn-cat-Database', 'DevOps': 'btn-cat-DevOps' };
             const targetBtn = document.getElementById(btnMap[category]);
             if (targetBtn) targetBtn.classList.add('active');
 
@@ -368,7 +422,13 @@
             container.innerHTML = `<p style="color: var(--text-secondary);">กำลังโหลดคอร์ส...</p>`;
 
             try {
-                const response = await fetch('/api/courses');
+                const token = localStorage.getItem('webtech_token');
+                const headers = {};
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+
+                const response = await fetch('/api/courses', { headers });
                 const data = await response.json();
                 const courses = data.courses;
                 allCourses = courses;
@@ -378,7 +438,20 @@
                 const filtered = courses.filter(course => {
                     const matchCategory = selectedCategory === 'ALL' || course.category === selectedCategory;
                     const matchKeyword = !keyword || course.title.toLowerCase().includes(keyword);
-                    return matchCategory && matchKeyword;
+                    const coursePrice = Number(course.price || 0);
+                    let matchPrice = true;
+
+                    if (selectedPriceRange === 'FREE') {
+                        matchPrice = coursePrice === 0;
+                    } else if (selectedPriceRange === 'BUDGET') {
+                        matchPrice = coursePrice > 0 && coursePrice <= 500;
+                    } else if (selectedPriceRange === 'STANDARD') {
+                        matchPrice = coursePrice > 500 && coursePrice <= 1000;
+                    } else if (selectedPriceRange === 'PREMIUM') {
+                        matchPrice = coursePrice > 1000;
+                    }
+
+                    return matchCategory && matchKeyword && matchPrice;
                 });
 
                 if (filtered.length === 0) {
@@ -389,6 +462,7 @@
                 container.innerHTML = filtered.map(course => {
                     const isFull = course.current_bookings >= course.max_capacity;
                     const seatsLeft = course.max_capacity - course.current_bookings;
+                    const coursePrice = Number(course.price || 0);
 
                     return `
                         <div class="card floating-ui" style="display: flex; flex-direction: column;">
@@ -398,6 +472,10 @@
                                 <span class="course-card-duration"><i class="fa-solid fa-clock"></i> ${course.duration}</span>
                             </div>
                             <h3 class="course-card-title">${course.title}</h3>
+                            <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin:0.75rem 0 0.5rem;">
+                                <span style="font-weight:700; color:#F59E0B; font-size:0.95rem;">${coursePrice === 0 ? 'ฟรี' : formatThaiBaht(coursePrice)}</span>
+                                <span style="font-size:0.85rem; color: var(--text-secondary);">${course.max_capacity} ที่นั่งทั้งหมด</span>
+                            </div>
                             <p class="course-card-desc">${course.description}</p>
                             <div class="course-card-footer">
                                 <div class="course-card-stats">
@@ -407,13 +485,19 @@
                                         ${isFull ? 'เต็มแล้ว' : `เหลือ ${seatsLeft} ที่นั่ง`}
                                     </span>
                                 </div>
-                                <button 
-                                    class="btn ${isFull ? 'btn-secondary' : 'btn-primary'} btn-sm"
-                                    onclick="handleCheckoutOrderClick(${course.id})"
-                                    ${isFull ? 'disabled' : ''}>
-                                    <i class="fa-solid fa-${isFull ? 'ban' : 'cart-shopping'}"></i>
-                                    ${isFull ? 'เต็มแล้ว' : 'จองเลย'}
-                                </button>
+                                ${course.is_enrolled > 0 ? `
+                                    <a href="classroom.html?courseId=c-${course.id}" class="btn btn-primary btn-sm">
+                                        <i class="fa-solid fa-circle-play"></i> เรียน
+                                    </a>
+                                ` : `
+                                    <button 
+                                        class="btn ${isFull ? 'btn-secondary' : 'btn-primary'} btn-sm"
+                                        onclick="handleCheckoutOrderClick(${course.id})"
+                                        ${isFull ? 'disabled' : ''}>
+                                        <i class="fa-solid fa-${isFull ? 'ban' : 'cart-shopping'}"></i>
+                                        ${isFull ? 'เต็มแล้ว' : 'จองเลย'}
+                                    </button>
+                                `}
                             </div>
                         </div>
                     `;
@@ -424,10 +508,18 @@
             }
         }
 
+        function formatThaiBaht(value) {
+            return new Intl.NumberFormat('th-TH', {
+                style: 'currency',
+                currency: 'THB',
+                maximumFractionDigits: 0
+            }).format(value);
+        }
+
         // ✅ ส่ง JWT token และใช้ path ที่ถูกต้อง
         async function handleCheckoutOrderClick(courseId) {
             const currentUser = window.WebtechState.getCurrentUser();
-            
+
             if (!currentUser) {
                 window.showToast("กรุณาเข้าสู่ระบบ", "คุณต้องล็อกอินก่อนทำการจองเวิร์กชอป", "error");
                 setTimeout(() => { window.location.href = 'login.html'; }, 1000);
@@ -464,4 +556,5 @@
         }
     </script>
 </body>
+
 </html>

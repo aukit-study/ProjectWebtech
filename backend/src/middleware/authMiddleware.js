@@ -46,6 +46,28 @@ function verifyToken(req, res, next) {
     }
 }
 
+// 🔐 Optional Token Verification
+// ตรวจสอบ JWT Token ถ้ามีก็ใส่ลงใน req.user แต่ถ้าไม่มีก็ปล่อยผ่าน
+function optionalToken(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader) {
+        return next();
+    }
+
+    const parts = authHeader.split(' ');
+    if (parts.length !== 2 || parts[0] !== 'Bearer') {
+        return next();
+    }
+
+    try {
+        const decoded = jwt.verify(parts[1], process.env.JWT_SECRET);
+        req.user = decoded;
+    } catch (error) {
+        // Just ignore invalid token for optional auth
+    }
+    next();
+}
+
 // 🛡️ Role-Based Access Control (RBAC) Middleware
 // ตรวจสอบว่า user มี role ที่ต้องการหรือไม่ (เช่น admin only)
 function requireRole(...allowedRoles) {
@@ -69,4 +91,4 @@ function requireRole(...allowedRoles) {
     };
 }
 
-module.exports = { verifyToken, requireRole };
+module.exports = { verifyToken, requireRole, optionalToken };

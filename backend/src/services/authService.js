@@ -33,12 +33,12 @@ class AuthService {
         return { id: result.lastID, username, email, fullname: fullname || username, role: 'student' };
     }
     static async loginUser(db, username, password) {
-        // 1. Server-Side Validation: ตรวจสอบว่ากรอกข้อมูลครบถ้วนไหม [cite: 34]
+        // 1. Server-Side Validation: ตรวจสอบว่ากรอกข้อมูลครบถ้วนไหม 
         if (!username || !password) {
             throw new Error('MISSING_FIELDS');
         }
 
-        // 2. The Gatekeeper Pattern: ค้นหา User ในฐานข้อมูลด้วย Parameterized Query [cite: 25, 40]
+        // 2. The Gatekeeper Pattern: ค้นหา User ในฐานข้อมูลด้วย Parameterized Query
         const user = await db.get(
             'SELECT * FROM users WHERE username = ?', 
             [username]
@@ -51,7 +51,7 @@ class AuthService {
         }
 
         // 4. Auth Logic: เมื่อผ่านการตรวจสอบ ให้สร้าง Stateless Identity (JWT Token) 
-        // ดึงค่า JWT_SECRET และ JWT_EXPIRES_IN จากไฟล์ .env ที่เราสร้างไว้ [cite: 50]
+        // ดึงค่า JWT_SECRET และ JWT_EXPIRES_IN จากไฟล์ .env ที่เราสร้างไว้ 
         const payload = { 
             id: user.id, 
             username: user.username, 

@@ -23,10 +23,10 @@ function verifyAdminPermissions() {
 }
 
 // --- REFRESH STATISTICS AND REGISTRY TABLE ---
-function refreshAdminDashboard() {
-    const courses = window.WebtechState.getCourses();
+async function refreshAdminDashboard() {
+    const courses = await fetchAdminCourses();
 
-    // 1. Render Stats Metrics (จำนวนคอร์สอิงจาก LocalStorage เดิมไปก่อน)
+    // 1. Render Stats Metrics
     document.getElementById('statAdminTotalCourses').innerText = courses.length;
 
     // 2. Render Registry Table Row Data
@@ -36,6 +36,19 @@ function refreshAdminDashboard() {
     fetchAndRenderUsers(); 
 }
 
+async function fetchAdminCourses() {
+    try {
+        const response = await fetch('/api/courses');
+        const result = await response.json();
+        if (response.ok && result.courses) {
+            return result.courses;
+        }
+    } catch (error) {
+        console.error('Error fetching admin courses:', error);
+    }
+    return window.WebtechState.getCourses();
+}
+
 function renderAdminCoursesTable(courses) {
     const tbody = document.getElementById('adminCoursesTableBody');
     if (!tbody) return;
@@ -43,7 +56,7 @@ function renderAdminCoursesTable(courses) {
     if (courses.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                <td colspan="8" style="text-align: center; color: var(--text-muted); padding: 2rem;">
                     <i class="fa-solid fa-clipboard-list" style="font-size: 2rem; margin-bottom: 0.5rem; display:block;"></i>
                     ไม่พบทะเบียนคอร์สเรียนในระบบ กรุณากด "เพิ่มคอร์สเรียนใหม่" ด้านบนเพื่อเริ่มระบบ
                 </td>
@@ -53,6 +66,8 @@ function renderAdminCoursesTable(courses) {
     }
 
     tbody.innerHTML = courses.map(course => {
+        const displayPrice = formatCoursePrice(course.price);
+
         return `
             <tr id="tr-${course.id}">
                 <td><code style="color:var(--accent-cyan); font-weight:700;">${course.id}</code></td>
@@ -60,6 +75,7 @@ function renderAdminCoursesTable(courses) {
                 <td><span class="role-tag-mini" style="font-size:0.7rem;">${course.category}</span></td>
                 <td><span class="role-tag-mini admin" style="font-size:0.7rem; background:rgba(139,92,246,0.1); color:var(--accent-purple); border:1px solid rgba(139,92,246,0.2);">${course.difficulty}</span></td>
                 <td><i class="fa-regular fa-clock" style="color:var(--text-muted); margin-right:0.25rem;"></i> ${course.duration}</td>
+                <td>${displayPrice}</td>
                 <td><i class="fa-solid fa-users" style="color:var(--text-muted); margin-right:0.25rem;"></i> ${course.current_bookings}/${course.max_capacity}</td>
                 <td>
                     <div class="table-action-btns">
@@ -76,10 +92,17 @@ function renderAdminCoursesTable(courses) {
     }).join('');
 }
 
+function formatCoursePrice(value) {
+    const price = Number(value || 0);
+    if (price === 0) return 'ฟรี';
+    return price.toLocaleString('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 });
+}
+
 // --- MODAL CRUD TOGGLES ---
 function openAddCourseModal() {
     document.getElementById('courseCrudForm').reset();
     document.getElementById('crudCourseId').value = '';
+    document.getElementById('crudCoursePrice').value = 0;
     document.getElementById('modalCrudTitle').innerHTML = '<i class="fa-solid fa-circle-plus" style="color:var(--accent-green); margin-right:0.5rem;"></i> เพิ่มข้อมูลคอร์สใหม่';
     document.getElementById('crudSubmitBtn').className = 'btn btn-success btn-sm';
     document.getElementById('crudSubmitBtn').innerHTML = '<i class="fa-solid fa-save"></i> เพิ่มคอร์สเรียน';
@@ -97,6 +120,7 @@ async function openEditCourseModal(courseId) {
         document.getElementById('crudCourseCategory').value = course.category;
         document.getElementById('crudCourseDifficulty').value = course.difficulty;
         document.getElementById('crudCourseDuration').value = course.duration;
+        document.getElementById('crudCoursePrice').value = course.price !== undefined ? course.price : 0;
         document.getElementById('crudCourseDescription').value = course.description;
         document.getElementById('crudCourseLessons').value = '';
 
@@ -124,6 +148,7 @@ async function handleCrudFormSubmit(e) {
         category: document.getElementById('crudCourseCategory').value,
         difficulty: document.getElementById('crudCourseDifficulty').value,
         duration: document.getElementById('crudCourseDuration').value.trim(),
+        price: Number(document.getElementById('crudCoursePrice').value),
         description: document.getElementById('crudCourseDescription').value.trim(),
     };
 

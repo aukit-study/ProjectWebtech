@@ -1,4 +1,3 @@
-// backend/src/controllers/adminController.js
 const adminService = require('../services/adminService');
 
 exports.getDashboardUsers = async (req, res, next) => {

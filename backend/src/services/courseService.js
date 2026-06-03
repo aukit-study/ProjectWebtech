@@ -2,22 +2,32 @@
 
 class CourseService {
     // ดึงข้อมูลคอร์สเรียนทั้งหมด
-    static async getAllCourses(db) {
-        return await db.all('SELECT * FROM courses');
+    static async getAllCourses(db, userId = null) {
+        let sql = `
+            SELECT c.*, 
+                   (SELECT COUNT(*) FROM enrollments e WHERE e.course_id = c.id) as current_bookings 
+                   ${userId ? `, (SELECT COUNT(*) FROM enrollments e WHERE e.course_id = c.id AND e.user_id = ${parseInt(userId)}) as is_enrolled` : ''}
+            FROM courses c
+        `;
+        return await db.all(sql);
     }
 
     // ดึงข้อมูลคอร์สเรียนตาม ID
     static async getCourseById(db, id) {
-        return await db.get('SELECT * FROM courses WHERE id = ?', [id]);
+        return await db.get(`
+            SELECT c.*, 
+                   (SELECT COUNT(*) FROM enrollments e WHERE e.course_id = c.id) as current_bookings 
+            FROM courses c WHERE c.id = ?
+        `, [id]);
     }
 
     // สร้างคอร์สเรียนใหม่ (Admin only)
     static async createCourse(db, courseData, userId) {
-        const { title, category, difficulty, duration, description, cover_image, max_capacity } = courseData;
+        const { title, category, difficulty, duration, description, cover_image, max_capacity, price } = courseData;
         
         const result = await db.run(
-            `INSERT INTO courses (title, category, difficulty, duration, description, cover_image, max_capacity, current_bookings, created_by)
-             VALUES (?, ?, ?, ?, ?, ?, ?, 0, ?)`,
+            `INSERT INTO courses (title, category, difficulty, duration, description, cover_image, price, max_capacity, created_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 title, 
                 category, 
@@ -25,6 +35,7 @@ class CourseService {
                 duration, 
                 description, 
                 cover_image || null, 
+                price !== undefined ? parseFloat(price) : 0,
                 max_capacity !== undefined ? parseInt(max_capacity) : 10, 
                 userId
             ]
@@ -35,17 +46,19 @@ class CourseService {
 
     // แก้ไขข้อมูลคอร์สเรียน (Admin only)
     static async updateCourse(db, id, courseData) {
-        const { title, category, difficulty, duration, description, cover_image, max_capacity } = courseData;
+        const { title, category, difficulty, duration, description, cover_image, max_capacity, price } = courseData;
 
         // ตรวจสอบว่าคอร์สมีตัวตนอยู่ในระบบหรือไม่
-        const existingCourse = await db.get('SELECT id FROM courses WHERE id = ?', [id]);
+        const existingCourse = await db.get('SELECT id, price FROM courses WHERE id = ?', [id]);
         if (!existingCourse) {
             throw new Error('COURSE_NOT_FOUND');
         }
 
+        const finalPrice = price !== undefined ? parseFloat(price) : existingCourse.price || 0;
+
         await db.run(
             `UPDATE courses 
-             SET title = ?, category = ?, difficulty = ?, duration = ?, description = ?, cover_image = ?, max_capacity = ? 
+             SET title = ?, category = ?, difficulty = ?, duration = ?, description = ?, cover_image = ?, price = ?, max_capacity = ? 
              WHERE id = ?`,
             [
                 title, 
@@ -54,6 +67,7 @@ class CourseService {
                 duration, 
                 description, 
                 cover_image !== undefined ? cover_image : null, 
+                finalPrice,
                 max_capacity !== undefined ? parseInt(max_capacity) : 10, 
                 id
             ]
@@ -75,7 +89,11 @@ class CourseService {
     // ลงทะเบียน / จองสิทธิ์ห้องเรียนเวิร์กชอป (Student/Admin)
     static async enrollInCourse(db, courseId, userId) {
         // 1. ตรวจสอบว่าคอร์สมีอยู่จริงหรือไม่
-        const course = await db.get('SELECT max_capacity, current_bookings, title FROM courses WHERE id = ?', [courseId]);
+        const course = await db.get(`
+            SELECT title, max_capacity, 
+                   (SELECT COUNT(*) FROM enrollments WHERE course_id = ?) as current_bookings 
+            FROM courses WHERE id = ?
+        `, [courseId, courseId]);
         if (!course) {
             throw new Error('COURSE_NOT_FOUND');
         }
@@ -96,7 +114,6 @@ class CourseService {
 
         // 4. ทำการบันทึกการจองลงฐานข้อมูลอย่างปลอดภัย
         await db.run('INSERT INTO enrollments (user_id, course_id) VALUES (?, ?)', [userId, courseId]);
-        await db.run('UPDATE courses SET current_bookings = current_bookings + 1 WHERE id = ?', [courseId]);
 
         return true;
     }

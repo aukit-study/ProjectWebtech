@@ -99,20 +99,16 @@ function selectLesson(lessonId) {
         <p style="margin-bottom: 1rem;">โปรดคลิกเล่นวิดีโอจำลองด้านบนเพื่อศึกษาเนื้อหา เมื่อทำความเข้าใจแนวคิดหลักแล้ว ให้กดปุ่ม <strong>"Mark as Completed"</strong> ด้านขวาบนเพื่อยืนยันการเรียนรู้และอัปเกรดเปอร์เซ็นต์ความสำเร็จของวิชานี้!</p>
         <div style="background: rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); padding: 1rem; border-radius: var(--border-radius-sm); font-family: monospace; font-size: 0.8rem; color:#A78BFA;">
             <span style="color:#EC4899;">// Recommended exercise:</span><br>
-            console.log("ศึกษาหัวข้อ ${activeLesson.title} เรียบร้อยแล้ว!");
         </div>
     `;
 
     // Manage "Mark as Completed" button state
-    const completeBtn = document.getElementById('markAsCompletedBtn');
-    completeBtn.disabled = false;
-    
+    const completeBtn = document.getElementById('markCompletedBtn');
     if (activeLesson.isCompleted) {
-        completeBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Completed ✔';
+        completeBtn.innerHTML = '<i class="fa-solid fa-check-circle"></i> เรียนจบแล้ว';
         completeBtn.className = 'btn btn-secondary';
-    } else {
-        completeBtn.innerHTML = '<i class="fa-regular fa-circle-check"></i> Mark as Completed';
-        completeBtn.className = 'btn btn-success';
+        completeBtn.disabled = true;
+    } else {  completeBtn.className = 'btn btn-success';
     }
 
     // Reset Player Mockup Play State
