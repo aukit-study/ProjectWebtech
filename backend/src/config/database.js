@@ -100,20 +100,33 @@ async function initDatabase() {
         // 🌱 Seeding Mock Data
         // 1. ตรวจสอบและลงทะเบียนผู้ใช้จำลอง (Mock Users)
         const userCount = await db.get('SELECT COUNT(*) as count FROM users');
-        if (userCount.count === 0) {
+        if (userCount.count < 10) {
             const bcrypt = require('bcrypt');
-            const studentPasswordHash = await bcrypt.hash('1234', 10);
-            const adminPasswordHash = await bcrypt.hash('admin123', 10);
+            
+            // ลบข้อมูล User เดิมทิ้งก่อนเพื่อลงใหม่ให้ครบ 10 คน
+            await db.run('DELETE FROM users');
+            
+            const usersToSeed = [
+                { username: 'student1', email: 'student1@turnpro.com', fullname: 'สมชาย เรียนดี (Student 1)', password: 'student1', role: 'student' },
+                { username: 'student2', email: 'student2@turnpro.com', fullname: 'สมหญิง ขยันเรียน (Student 2)', password: 'student2', role: 'student' },
+                { username: 'student3', email: 'student3@turnpro.com', fullname: 'นพดล คนเก่ง (Student 3)', password: 'student3', role: 'student' },
+                { username: 'student4', email: 'student4@turnpro.com', fullname: 'มาลี สีสวย (Student 4)', password: 'student4', role: 'student' },
+                { username: 'student5', email: 'student5@turnpro.com', fullname: 'วิชัย ใจดี (Student 5)', password: 'student5', role: 'student' },
+                { username: 'student6', email: 'student6@turnpro.com', fullname: 'อารีย์ มีโชค (Student 6)', password: 'student6', role: 'student' },
+                { username: 'student7', email: 'student7@turnpro.com', fullname: 'ประเสริฐ เลิศล้ำ (Student 7)', password: 'student7', role: 'student' },
+                { username: 'student8', email: 'student8@turnpro.com', fullname: 'ดวงใจ ใฝ่รู้ (Student 8)', password: 'student8', role: 'student' },
+                { username: 'admin1', email: 'admin1@turnpro.com', fullname: 'นายระบบ ผู้ดูแล 1 (Admin)', password: 'admin1', role: 'admin' },
+                { username: 'admin2', email: 'admin2@turnpro.com', fullname: 'นางสาวแอดมิน ผู้จัดการ 2 (Admin)', password: 'admin2', role: 'admin' }
+            ];
 
-            await db.run(
-                `INSERT INTO users (username, email, fullname, password_hash, role) VALUES (?, ?, ?, ?, ?)`,
-                ['student', 'student@turnpro.com', 'อุกฤษฏ์ นักเรียนสายโค้ด', studentPasswordHash, 'student']
-            );
-            await db.run(
-                `INSERT INTO users (username, email, fullname, password_hash, role) VALUES (?, ?, ?, ?, ?)`,
-                ['admin', 'admin@turnpro.com', 'นายระบบ ผู้ดูแลระบบ', adminPasswordHash, 'admin']
-            );
-            console.log('🌱 Seeded mock users successfully.');
+            for (const u of usersToSeed) {
+                const hash = await bcrypt.hash(u.password, 10);
+                await db.run(
+                    `INSERT INTO users (username, email, fullname, password_hash, role) VALUES (?, ?, ?, ?, ?)`,
+                    [u.username, u.email, u.fullname, hash, u.role]
+                );
+            }
+            console.log('🌱 Seeded 10 mock users successfully.');
         }
 
         // 2. ตรวจสอบและลงทะเบียนคอร์สเรียนจำลอง (Mock Courses)

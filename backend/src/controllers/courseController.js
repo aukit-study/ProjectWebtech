@@ -228,5 +228,41 @@ class CourseController {
     } catch (error) {
         next(error);
     }
-}}
+    }
+
+    // POST /api/courses/:id/progress - อัปเดตความคืบหน้าการเรียน
+    static async updateProgress(req, res, next) {
+        const db = req.app.locals.db;
+        const userId = req.user.id;
+        const { id } = req.params;
+        const { completed_lessons, is_finished } = req.body;
+
+        try {
+            // Check if enrollment exists
+            const enrollment = await db.get(
+                'SELECT id FROM enrollments WHERE user_id = ? AND course_id = ?',
+                [userId, id]
+            );
+
+            if (!enrollment) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'ไม่พบประวัติการสมัครคอร์สนี้'
+                });
+            }
+
+            await db.run(
+                'UPDATE enrollments SET completed_lessons = ?, is_finished = ? WHERE id = ?',
+                [completed_lessons || 0, is_finished ? 1 : 0, enrollment.id]
+            );
+
+            return res.status(200).json({
+                success: true,
+                message: 'บันทึกความคืบหน้าสำเร็จ'
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+}
 module.exports = CourseController;

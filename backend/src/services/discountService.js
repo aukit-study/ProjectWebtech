@@ -3,9 +3,6 @@
 class DiscountService {
 
     static async calculateCheckout(db, courseIds) {
-        console.log("courseIds =", courseIds);
-        console.log("originalTotal =", originalTotal);
-        console.log("itemCount =", itemCount);
 
         // ── Step 1: Query ราคาจริงจาก DB ──
         const placeholders = courseIds.map(() => '?').join(', ');
@@ -20,35 +17,29 @@ class DiscountService {
 
         // ── Step 2: คำนวณ originalTotal ──
         const originalTotal = courses.reduce((sum, c) => sum + (c.price || 0), 0);
-        const itemCount     = courses.length;
+        const itemCount = courses.length;
 
-        console.log("courseIds =", courseIds);
-        console.log("originalTotal =", originalTotal);
-        console.log("itemCount =", itemCount);
 
         // ── Step 3: Dynamic Discount Engine ──
-let discountPercent = 0;
-const reasons = [];
+        let discountPercent = 0;
+        let discountReason = '';
 
-if (itemCount >= 3 && originalTotal > 1500) {
-    // ✅ เช็คเงื่อนไขรวมก่อน (priority สูงสุด)
-    discountPercent = 15;
-    reasons.push('ซื้อ 3 คอร์สขึ้นไป และยอดรวมเกิน ฿1,500 (ลด 15%)');
-} else if (originalTotal > 1500) {
-    discountPercent = 10;
-    reasons.push('ยอดรวมเกิน ฿1,500 (ลด 10%)');
-} else if (itemCount >= 3) {
-    discountPercent = 5;
-    reasons.push('ซื้อตั้งแต่ 3 คอร์สขึ้นไป (ลด 5%)');
-}
-
-        const discountReason = reasons.length > 0
-            ? reasons.join(' + ')
-            : 'ไม่มีส่วนลด';
+        if (itemCount > 3 && originalTotal > 1500) {
+            discountPercent = 15;
+            discountReason = 'ซื้อมากกว่า 3 คอร์ส และ ยอดรวมเกิน ฿1,500 (ลด 15%)';
+        } else if (originalTotal > 1500) {
+            discountPercent = 10;
+            discountReason = 'ยอดรวมเกิน ฿1,500 (ลด 10%)';
+        } else if (itemCount > 3) {
+            discountPercent = 5;
+            discountReason = 'ซื้อมากกว่า 3 คอร์ส (ลด 5%)';
+        } else {
+            discountReason = 'ไม่มีส่วนลด';
+        }
 
         // ── Step 4: คำนวณราคาสุดท้าย ──              ← ของเดิมไม่มีส่วนนี้เลย
-        const discountAmount  = Math.round(originalTotal * discountPercent / 100);
-        const finalTotal      = originalTotal - discountAmount;
+        const discountAmount = Math.round(originalTotal * discountPercent / 100);
+        const finalTotal = originalTotal - discountAmount;
 
         return {
             courses,
@@ -58,7 +49,7 @@ if (itemCount >= 3 && originalTotal > 1500) {
             finalTotal,
             discountReason,
         };
-    }   // ← ปิด method ที่นี่
-}       // ← ปิด class ที่นี่
+    }
+}
 
 module.exports = DiscountService;

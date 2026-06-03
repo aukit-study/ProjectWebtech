@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadStudentProfile();
 });
 
-function loadStudentProfile() {
+async function loadStudentProfile() {
     const currentUser = window.WebtechState.getCurrentUser();
     if (!currentUser) {
         // Safe redirect to login if no session
@@ -21,22 +21,30 @@ function loadStudentProfile() {
     const initials = currentUser.fullname.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'ST';
     document.getElementById('profileAvatarText').innerText = initials;
 
-    // 2. Query Courses & Progress
-    const courses = window.WebtechState.getCourses();
+    // 2. Query Courses & Progress from Backend
+    let allCourses = [];
+    try {
+        const token = localStorage.getItem('webtech_token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        const response = await fetch('/api/courses', { headers });
+        const data = await response.json();
+        allCourses = data.courses || [];
+    } catch (err) {
+        console.error('Failed to load courses from API:', err);
+    }
+    
+    // Get progress from state.js
+    const stateCourses = window.WebtechState.getCourses();
+    const enrolledCourses = allCourses.filter(c => c.is_enrolled > 0);
     
     // Count details
     let totalLessonsCompleted = 0;
-    let enrolledCoursesCount = 0;
+    const enrolledCoursesCount = enrolledCourses.length;
     
-    courses.forEach(c => {
-        const progress = window.WebtechState.getCourseProgress(c);
-        if (progress > 0) {
-            enrolledCoursesCount++;
-        }
-        // 👉 [FIXED] เปลี่ยนมาเช็คสถานะผ่านกลไกส่วนกลางของกลุ่มใน state.js 
-        if (c.lessons) {
-            c.lessons.forEach(l => {
-                // คอร์สหลักจะถูกเช็คสถานะผ่าน property isCompleted ในบทเรียนของแต่ละคอร์ส
+    enrolledCourses.forEach(c => {
+        const stateCourse = stateCourses.find(sc => sc.id === `c-${c.id}`);
+        if (stateCourse && stateCourse.lessons) {
+            stateCourse.lessons.forEach(l => {
                 if (l.isCompleted) {
                     totalLessonsCompleted++;
                 }
@@ -72,7 +80,7 @@ function loadStudentProfile() {
     renderBadgeGallery(currentUser);
 
     // 6. Render Enrolled Courses List
-    renderEnrolledCoursesList(courses);
+    renderEnrolledCoursesList(enrolledCourses, stateCourses);
 }
 
 // --- RENDER DYNAMIC BADGES GRID ---
@@ -110,11 +118,9 @@ function renderBadgeGallery(currentUser) {
 }
 
 // --- RENDER ENROLLED COURSES LIST ---
-function renderEnrolledCoursesList(courses) {
+function renderEnrolledCoursesList(enrolledCourses, stateCourses) {
     const container = document.getElementById('profileCoursesContainer');
     if (!container) return;
-
-    const enrolledCourses = courses.filter(c => window.WebtechState.getCourseProgress(c) > 0);
 
     if (enrolledCourses.length === 0) {
         container.innerHTML = `
@@ -128,9 +134,10 @@ function renderEnrolledCoursesList(courses) {
     }
 
     container.innerHTML = enrolledCourses.map(course => {
-        const progress = window.WebtechState.getCourseProgress(course);
-        const lessonsCount = course.lessons ? course.lessons.length : 0;
-        const completedCount = course.lessons ? course.lessons.filter(l => l.isCompleted).length : 0;
+        const stateCourse = stateCourses.find(c => c.id === `c-${course.id}`);
+        const progress = stateCourse ? window.WebtechState.getCourseProgress(stateCourse) : 0;
+        const lessonsCount = stateCourse && stateCourse.lessons ? stateCourse.lessons.length : 0;
+        const completedCount = stateCourse && stateCourse.lessons ? stateCourse.lessons.filter(l => l.isCompleted).length : 0;
         
         let barColor = 'var(--accent-purple)';
         if (progress === 100) barColor = 'var(--accent-green)';
@@ -150,7 +157,7 @@ function renderEnrolledCoursesList(courses) {
                         </div>
                     </div>
                 </div>
-                <button onclick="window.location.href='classroom.html?courseId=${course.id}'" class="btn btn-secondary btn-sm" style="align-self: center;">
+                <button onclick="window.location.href='classroom.html?courseId=c-${course.id}'" class="btn btn-secondary btn-sm" style="align-self: center;">
                     <i class="fa-solid fa-circle-play"></i> เข้าห้องเรียน
                 </button>
             </div>

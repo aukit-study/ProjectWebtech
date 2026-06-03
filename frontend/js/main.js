@@ -36,6 +36,15 @@ function renderHeaderSession() {
                 <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
             </button>
         `;
+        
+        // Update Hero Buttons (if on index.html)
+        const heroActionButtons = document.getElementById('heroActionButtons');
+        if (heroActionButtons) {
+            heroActionButtons.innerHTML = `
+                <a href="#catalog" class="btn btn-primary"><i class="fa-solid fa-graduation-cap"></i> ค้นหาคอร์สเรียน</a>
+                <a href="classroom.html" class="btn btn-secondary"><i class="fa-solid fa-chalkboard-user"></i> ห้องเรียนของฉัน</a>
+            `;
+        }
     } else {
         navActions.innerHTML = `
             <div class="cart-icon-wrapper" onclick="window.location.href='login.html'" style="position: relative; cursor: pointer; color: white; margin-right: 1.5rem; display: flex; align-items: center; justify-content: center;">
@@ -45,6 +54,15 @@ function renderHeaderSession() {
                 <i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ
             </a>
         `;
+        
+        // Update Hero Buttons (if on index.html)
+        const heroActionButtons = document.getElementById('heroActionButtons');
+        if (heroActionButtons) {
+            heroActionButtons.innerHTML = `
+                <a href="#catalog" class="btn btn-primary"><i class="fa-solid fa-rocket"></i> เริ่มเรียนฟรีเลย</a>
+                <a href="login.html" class="btn btn-secondary"><i class="fa-solid fa-user-plus"></i> สมัครสมาชิก</a>
+            `;
+        }
     }
 }
 
@@ -58,19 +76,26 @@ const CartManager = {
         this.updateCartUI();
     },
 
+    getCartKey() {
+        const currentUser = window.WebtechState && window.WebtechState.getCurrentUser ? window.WebtechState.getCurrentUser() : null;
+        return currentUser ? `webtech_cart_${currentUser.username}` : 'webtech_cart_guest';
+    },
+
     loadCart() {
-        const storedCart = localStorage.getItem('webtech_cart');
+        const storedCart = localStorage.getItem(this.getCartKey());
         if (storedCart) {
             try {
                 this.items = JSON.parse(storedCart);
             } catch (e) {
                 this.items = [];
             }
+        } else {
+            this.items = [];
         }
     },
 
     saveCart() {
-        localStorage.setItem('webtech_cart', JSON.stringify(this.items));
+        localStorage.setItem(this.getCartKey(), JSON.stringify(this.items));
         this.updateCartUI();
     },
 
@@ -179,15 +204,15 @@ const itemCount = this.items.length;
 let discountPercent = 0;
 let discountReason = '';
 
-if (itemCount >= 3 && total > 1500) {
+if (itemCount > 3 && total > 1500) {
     discountPercent = 15;
     discountReason = 'ยอดรวมเกิน ฿1,500 และ ซื้อมากกว่า 3 คอร์ส';
 } else if (total > 1500) {
+    discountPercent = 10;
+    discountReason = 'ยอดรวมเกิน ฿1,500';
+} else if (itemCount > 3) {
     discountPercent = 5;
     discountReason = 'ซื้อมากกว่า 3 คอร์ส';
-} else if (itemCount > 3) {
-    discountPercent = 15;
-    discountReason = 'ยอดรวมเกิน ฿1,500';
 }
 
 if (discountPercent > 0) {
@@ -308,6 +333,7 @@ checkoutBtn.disabled = false;
 // --- HANDLE LOGOUT IN HEADER ---
 function handleHeaderLogout() {
     window.WebtechState.logout();
+    CartManager.clearCart(); // ล้างตะกร้าเมื่อล็อกเอาต์
     showToast("ออกจากระบบสำเร็จ", "บ๊ายบาย! ไว้กลับมาเรียนโค้ดด้วยกันใหม่นะ", "success");
     setTimeout(() => {
         window.location.href = 'login.html';

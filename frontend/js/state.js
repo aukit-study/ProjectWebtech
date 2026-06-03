@@ -333,8 +333,16 @@ const DEFAULT_COURSES = [
 ];
 
 const DEFAULT_USERS = [
-    { username: "student", password: "1234", role: "student", fullname: "อุกฤษฏ์ นักเรียนสายโค้ด", studyHours: 12.5, unlockedBadges: [] },
-    { username: "admin", password: "admin123", role: "admin", fullname: "นายระบบ ผู้ดูแลระบบ", studyHours: 50.0, unlockedBadges: ["b-1", "b-2", "b-3", "b-4"] }
+    { username: "student1", password: "student1", role: "student", fullname: "สมชาย เรียนดี (Student 1)", studyHours: 12.5, unlockedBadges: [] },
+    { username: "student2", password: "student2", role: "student", fullname: "สมหญิง ขยันเรียน (Student 2)", studyHours: 5.0, unlockedBadges: [] },
+    { username: "student3", password: "student3", role: "student", fullname: "นพดล คนเก่ง (Student 3)", studyHours: 0, unlockedBadges: [] },
+    { username: "student4", password: "student4", role: "student", fullname: "มาลี สีสวย (Student 4)", studyHours: 0, unlockedBadges: [] },
+    { username: "student5", password: "student5", role: "student", fullname: "วิชัย ใจดี (Student 5)", studyHours: 2.0, unlockedBadges: [] },
+    { username: "student6", password: "student6", role: "student", fullname: "อารีย์ มีโชค (Student 6)", studyHours: 0, unlockedBadges: [] },
+    { username: "student7", password: "student7", role: "student", fullname: "ประเสริฐ เลิศล้ำ (Student 7)", studyHours: 0, unlockedBadges: [] },
+    { username: "student8", password: "student8", role: "student", fullname: "ดวงใจ ใฝ่รู้ (Student 8)", studyHours: 0, unlockedBadges: [] },
+    { username: "admin1", password: "admin1", role: "admin", fullname: "นายระบบ ผู้ดูแล 1 (Admin)", studyHours: 50.0, unlockedBadges: ["b-1"] },
+    { username: "admin2", password: "admin2", role: "admin", fullname: "นางสาวแอดมิน ผู้จัดการ 2 (Admin)", studyHours: 10.0, unlockedBadges: [] }
 ];
 
 const BADGE_DEFINITIONS = [
@@ -450,6 +458,26 @@ const WebtechState = {
 
                 setStorage(STATE_KEYS.USERS, users);
                 this.setCurrentUser(dbUser);
+            }
+
+            // Sync progress to backend database
+            const completedLessonsCount = course.lessons.filter(l => l.isCompleted).length;
+            const isFinished = completedLessonsCount === course.lessons.length;
+            const token = localStorage.getItem('webtech_token');
+            const numericCourseId = course.id.replace('c-', '');
+            
+            if (token) {
+                fetch(`/api/courses/${numericCourseId}/progress`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ 
+                        completed_lessons: completedLessonsCount,
+                        is_finished: isFinished
+                    })
+                }).catch(err => console.error('Failed to sync progress:', err));
             }
         }
 

@@ -11,6 +11,7 @@ router.get('/:id', CourseController.getCourseById);
 // verifyToken: ตรวจสอบ JWT token
 router.post('/checkout', verifyToken, CourseController.checkoutCart);
 router.post('/:id/enroll', verifyToken, CourseController.enrollInCourse);
+router.post('/:id/progress', verifyToken, CourseController.updateProgress);
 
 // 🛡️ Admin Only Routes - ต้อง login และเป็น admin
 // requireRole('admin'): ตรวจสอบว่าเป็น admin หรือไม่
