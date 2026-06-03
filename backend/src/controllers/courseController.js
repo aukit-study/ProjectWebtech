@@ -158,6 +158,48 @@ class CourseController {
             next(error);
         }
     }
+
+    // POST /api/checkout - สมัครหลายคอร์สพร้อมกันจากตะกร้า
+    static async checkoutCart(req, res, next) {
+        const db = req.app.locals.db;
+        const userId = req.user.id;
+        const { courseIds } = req.body;
+
+        if (!Array.isArray(courseIds) || courseIds.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'ตะกร้าว่างเปล่า หรือรูปแบบข้อมูลไม่ถูกต้อง'
+            });
+        }
+
+        const results = [];
+        let successCount = 0;
+
+        for (const id of courseIds) {
+            try {
+                await CourseService.enrollInCourse(db, id, userId);
+                results.push({ id, status: 'success' });
+                successCount++;
+            } catch (error) {
+                // If it fails (e.g. ALREADY_ENROLLED, COURSE_FULL), we just record it and continue
+                results.push({ id, status: 'failed', reason: error.message });
+            }
+        }
+
+        if (successCount === 0 && courseIds.length > 0) {
+            return res.status(409).json({
+                success: false,
+                message: 'ไม่สามารถสั่งซื้อคอร์สได้เลย อาจจะเต็มหรือสมัครไปแล้วทั้งหมด',
+                results
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            message: `สั่งซื้อสำเร็จ ${successCount} คอร์ส`,
+            results
+        });
+    }
 }
 
 module.exports = CourseController;

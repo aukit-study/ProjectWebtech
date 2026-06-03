@@ -486,16 +486,16 @@
                                     </span>
                                 </div>
                                 ${course.is_enrolled > 0 ? `
-                                    <a href="classroom.html?courseId=c-${course.id}" class="btn btn-primary btn-sm">
+                                    <a href="classroom.html?courseId=c-${course.id}" class="btn btn-blue btn-sm">
                                         <i class="fa-solid fa-circle-play"></i> เรียน
                                     </a>
                                 ` : `
                                     <button 
                                         class="btn ${isFull ? 'btn-secondary' : 'btn-primary'} btn-sm"
-                                        onclick="handleCheckoutOrderClick(${course.id})"
+                                        onclick="handleAddToCartClick(${course.id})"
                                         ${isFull ? 'disabled' : ''}>
-                                        <i class="fa-solid fa-${isFull ? 'ban' : 'cart-shopping'}"></i>
-                                        ${isFull ? 'เต็มแล้ว' : 'จองเลย'}
+                                        <i class="fa-solid fa-${isFull ? 'ban' : 'cart-plus'}"></i>
+                                        ${isFull ? 'เต็มแล้ว' : 'เพิ่มลงตะกร้า'}
                                     </button>
                                 `}
                             </div>
@@ -516,44 +516,15 @@
             }).format(value);
         }
 
-        // ✅ ส่ง JWT token และใช้ path ที่ถูกต้อง
-        async function handleCheckoutOrderClick(courseId) {
-            const currentUser = window.WebtechState.getCurrentUser();
-
-            if (!currentUser) {
-                window.showToast("กรุณาเข้าสู่ระบบ", "คุณต้องล็อกอินก่อนทำการจองเวิร์กชอป", "error");
-                setTimeout(() => { window.location.href = 'login.html'; }, 1000);
-                return;
-            }
-
-            const token = localStorage.getItem('webtech_token');
-
-            try {
-                const response = await fetch(`/api/courses/${courseId}/enroll`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                const result = await response.json();
-
-                if (response.ok) {
-                    window.showToast("ทำรายการสำเร็จ", result.message, "success");
-                    renderCourses();
-                } else if (response.status === 409) {
-                    window.showToast("เกิดข้อผิดพลาด (409)", result.message, "error");
-                } else if (response.status === 401) {
-                    window.showToast("กรุณาเข้าสู่ระบบใหม่", "Session หมดอายุ", "error");
-                    setTimeout(() => { window.location.href = 'login.html'; }, 1000);
-                } else {
-                    window.showToast("เกิดข้อผิดพลาด", result.message, "error");
-                }
-            } catch (err) {
-                window.showToast("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อ server ได้", "error");
+        // ✅ หยิบใส่ตะกร้า (Cart)
+        function handleAddToCartClick(courseId) {
+            const course = allCourses.find(c => c.id === courseId);
+            if (course && typeof CartManager !== 'undefined') {
+                CartManager.addToCart(course);
             }
         }
+
+
     </script>
 </body>
 
