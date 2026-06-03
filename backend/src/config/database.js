@@ -86,6 +86,17 @@ async function initDatabase() {
             await db.run('ALTER TABLE courses ADD COLUMN price REAL DEFAULT 0');
         }
 
+        // 🌟 -----------------------------------------------------------------
+        // 🌟 Auto-Migration สำหรับเติมคอลัมน์ fullname ลงในตาราง users ตัวเก่า
+        // 🌟 -----------------------------------------------------------------
+        const userColumns = await db.all("PRAGMA table_info(users)");
+        const hasFullnameColumn = userColumns.some(column => column.name === 'fullname');
+        if (!hasFullnameColumn) {
+            await db.run("ALTER TABLE users ADD COLUMN fullname TEXT DEFAULT 'ไม่ระบุชื่อ'");
+            console.log('🔧 Migrated users table: Added fullname column successfully.');
+        }
+        // --------------------------------------------------------------------
+
         // 🌱 Seeding Mock Data
         // 1. ตรวจสอบและลงทะเบียนผู้ใช้จำลอง (Mock Users)
         const userCount = await db.get('SELECT COUNT(*) as count FROM users');
