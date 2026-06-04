@@ -1,6 +1,6 @@
 const CartManager = {
     items: [],
-    
+
     init() {
         this.loadCart();
         this.createCartModal();
@@ -34,7 +34,6 @@ const CartManager = {
         this.items.push(course);
         this.saveCart();
         showToast("เพิ่มสำเร็จ", `เพิ่ม "${course.title}" ลงในตะกร้า`, "success");
-        this.openCartModal();
     },
 
     removeFromCart(courseId) {
@@ -91,7 +90,7 @@ const CartManager = {
         const container = document.getElementById('cartItemsContainer');
         const priceLabel = document.getElementById('cartTotalPrice');
         const checkoutBtn = document.getElementById('cartCheckoutBtn');
-        
+
         if (!container) return;
 
         if (this.items.length === 0) {
@@ -171,7 +170,7 @@ const CartManager = {
 
     async handleCheckout() {
         if (this.items.length === 0) return;
-        
+
         const currentUser = window.WebtechState.getCurrentUser();
         if (!currentUser) {
             showToast("กรุณาเข้าสู่ระบบ", "คุณต้องล็อกอินก่อนทำการจองเวิร์กชอป", "error");

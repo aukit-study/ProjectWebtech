@@ -178,7 +178,7 @@ async function initDatabase() {
             for (const course of mockCourses) {
                 await db.run(
                     `INSERT INTO courses (title, category, difficulty, description, cover_image, price, max_capacity, created_by)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
                     [
                         course.title, course.category, course.difficulty, course.description,
                         course.cover_image, course.price, course.max_capacity, adminId

@@ -118,7 +118,6 @@ async function renderCourses() {
                     <div class="course-card-cover" style="background: ${course.cover_image};">
                         <span class="course-card-tag">${course.category}</span>
                         <span class="course-card-difficulty ${course.difficulty}">${course.difficulty}</span>
-                        <span class="course-card-duration"><i class="fa-solid fa-clock"></i> ${course.duration}</span>
                     </div>
                     <h3 class="course-card-title">${course.title}</h3>
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; margin:0.75rem 0 0.5rem;">
