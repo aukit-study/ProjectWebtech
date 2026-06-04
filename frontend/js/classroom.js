@@ -2,7 +2,7 @@
    Webtech E-Learning Platform - Classroom Controller & Gamification Engine
    ========================================================================== */
 
-let allEnrolledCoursesData = []; 
+let allEnrolledCoursesData = [];
 let currentClassroomCategory = 'ALL'; // 🆕 เพิ่มตัวแปรนี้เข้ามา
 
 let activeCourse = null;
@@ -35,7 +35,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 🌟 [เพิ่มใหม่] ผูก Event ให้ Dropdown ทำงานเมื่อมีการเปลี่ยนค่า 🌟
     const filterStatus = document.getElementById('classroomFilterStatus');
-    const sortOrder = document.getElementById('classroomSortOrder');
 
     if (filterStatus) filterStatus.addEventListener('change', handleClassroomFilter);
     if (sortOrder) sortOrder.addEventListener('change', handleClassroomFilter);
@@ -152,21 +151,21 @@ async function renderEnrolledCoursesOverview() {
 // 🆕 ฟังก์ชันใหม่: สลับปุ่มหมวดหมู่
 function setClassroomCategory(cat) {
     currentClassroomCategory = cat;
-    
+
     // ลบสีปุ่มทั้งหมดก่อน
     const btnIds = ['ALL', 'HTMLCSS', 'JS', 'Backend', 'Database', 'DevOps'];
     btnIds.forEach(id => {
         const btn = document.getElementById(`btnCat${id}`);
-        if(btn) btn.classList.remove('active');
+        if (btn) btn.classList.remove('active');
     });
 
     // กำหนด ID ปุ่มที่เพิ่งกด เพื่อใส่สีไฮไลต์
     let activeId = cat;
-    if(cat === 'HTML/CSS') activeId = 'HTMLCSS';
-    if(cat === 'JavaScript') activeId = 'JS';
-    
+    if (cat === 'HTML/CSS') activeId = 'HTMLCSS';
+    if (cat === 'JavaScript') activeId = 'JS';
+
     const activeBtn = document.getElementById(`btnCat${activeId}`);
-    if(activeBtn) activeBtn.classList.add('active');
+    if (activeBtn) activeBtn.classList.add('active');
 
     // สั่งให้กรองข้อมูลใหม่
     handleClassroomFilter();
@@ -175,9 +174,8 @@ function setClassroomCategory(cat) {
 // ฟังก์ชันคัดกรอง และจัดเรียงข้อมูล (อัปเดตแล้ว)
 function handleClassroomFilter() {
     const keyword = (document.getElementById('classroomSearchInput')?.value || '').toLowerCase(); // 🆕 ดึงคำที่พิมพ์
-    const category = currentClassroomCategory; 
+    const category = currentClassroomCategory;
     const status = document.getElementById('classroomFilterStatus')?.value || 'ALL';
-    const sortOrder = document.getElementById('classroomSortOrder')?.value || 'NEWEST';
 
     let filtered = allEnrolledCoursesData.filter(course => {
         const stateCourse = window.WebtechState.getCourseById(`c-${course.id}`);
@@ -186,27 +184,17 @@ function handleClassroomFilter() {
 
         // 🆕 เช็คว่าชื่อคอร์สตรงกับที่พิมพ์ไหม
         const matchSearch = course.title.toLowerCase().includes(keyword);
-        
+
         const matchCategory = category === 'ALL' ? true : course.category === category;
-        
+
         let matchStatus = true;
         if (status === 'COMPLETED') matchStatus = isFinished;
         if (status === 'LEARNING') matchStatus = !isFinished;
 
         // ต้องผ่านเงื่อนไข ค้นหา + หมวดหมู่ + สถานะ ถึงจะโชว์
-        return matchSearch && matchCategory && matchStatus; 
+        return matchSearch && matchCategory && matchStatus;
     });
-
-    filtered.sort((a, b) => {
-        const dateA = new Date(a.enrolled_at || 0);
-        const dateB = new Date(b.enrolled_at || 0);
-        
-        if (sortOrder === 'NEWEST') return dateB - dateA;
-        if (sortOrder === 'OLDEST') return dateA - dateB;
-        return 0;
-    });
-
-    renderEnrolledCoursesGrid(filtered); 
+    renderEnrolledCoursesGrid(filtered);
 }
 
 // 3. ฟังก์ชันวาดการ์ดคอร์สเรียน
@@ -231,8 +219,8 @@ function renderEnrolledCoursesGrid(courses) {
         const completedCount = stateCourse && stateCourse.lessons ? stateCourse.lessons.filter(l => l.isCompleted).length : 0;
 
         // แปลงวันที่ให้อ่านง่าย
-        const enrolledDate = course.enrolled_at 
-            ? new Date(course.enrolled_at).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }) 
+        const enrolledDate = course.enrolled_at
+            ? new Date(course.enrolled_at).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' })
             : '-';
 
         let barColor = 'var(--accent-purple)';
@@ -583,7 +571,7 @@ function animateConfetti() {
 function triggerUnenroll() {
     const urlParams = new URLSearchParams(window.location.search);
     const courseIdParam = urlParams.get('courseId');
-    
+
     if (courseIdParam) {
         const actualId = courseIdParam.replace('c-', '');
         handleUnenrollCourse(actualId);
@@ -596,7 +584,7 @@ function handleUnenrollCourse(courseId) {
     const modal = document.getElementById('customConfirmModal');
     if (modal) {
         modal.classList.add('active');
-        document.getElementById('confirmUnenrollBtn').onclick = function() {
+        document.getElementById('confirmUnenrollBtn').onclick = function () {
             closeCustomConfirm();
             executeUnenroll(courseId);
         };
@@ -611,7 +599,7 @@ function closeCustomConfirm() {
 async function executeUnenroll(courseId) {
     const token = localStorage.getItem('webtech_token');
     const unenrollBtn = document.getElementById('unenrollBtn');
-    
+
     if (unenrollBtn) {
         unenrollBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังดำเนินการ...';
         unenrollBtn.disabled = true;
@@ -622,9 +610,9 @@ async function executeUnenroll(courseId) {
             method: 'DELETE',
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        
+
         const result = await response.json();
-        
+
         if (response.ok) {
             showToast('ยกเลิกสำเร็จ', 'นำคอร์สเรียนออกจากห้องเรียนของคุณแล้ว', 'success');
             setTimeout(() => window.location.href = 'classroom.html', 1500);
