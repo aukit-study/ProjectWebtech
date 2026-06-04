@@ -2,6 +2,9 @@
    Webtech E-Learning Platform - Classroom Controller & Gamification Engine
    ========================================================================== */
 
+let allEnrolledCoursesData = []; 
+let currentClassroomCategory = 'ALL'; // 🆕 เพิ่มตัวแปรนี้เข้ามา
+
 let activeCourse = null;
 let activeLesson = null;
 let isVideoPlayingSimulated = false;
@@ -27,6 +30,15 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     initConfettiCanvas();
+
+    initConfettiCanvas();
+
+    // 🌟 [เพิ่มใหม่] ผูก Event ให้ Dropdown ทำงานเมื่อมีการเปลี่ยนค่า 🌟
+    const filterStatus = document.getElementById('classroomFilterStatus');
+    const sortOrder = document.getElementById('classroomSortOrder');
+
+    if (filterStatus) filterStatus.addEventListener('change', handleClassroomFilter);
+    if (sortOrder) sortOrder.addEventListener('change', handleClassroomFilter);
 });
 
 // ===== SEARCH & FILTER =====
@@ -108,6 +120,8 @@ function initSearchFilter() {
 }
 
 // ===== RENDER ENROLLED COURSES OVERVIEW =====
+
+// 1. ฟังก์ชันโหลดคอร์สทั้งหมดจาก API (เฉพาะที่สมัครแล้ว)
 async function renderEnrolledCoursesOverview() {
     const container = document.getElementById('enrolledCoursesGrid');
     if (!container) return;
@@ -116,69 +130,140 @@ async function renderEnrolledCoursesOverview() {
 
     try {
         const token = localStorage.getItem('webtech_token');
-        const headers = {};
-        if (token) headers['Authorization'] = `Bearer ${token}`;
+        const response = await fetch('/api/courses', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
 
-        const response = await fetch('/api/courses', { headers });
-        const data = await response.json();
-        const allCourses = data.courses || [];
-        
-        const enrolledCourses = allCourses.filter(c => c.is_enrolled > 0);
-
-        if (enrolledCourses.length === 0) {
-            container.innerHTML = `
-                <div style="grid-column: 1 / -1; text-align: center; padding: 3rem; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px dashed var(--border-color);">
-                    <i class="fa-solid fa-graduation-cap" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
-                    <p style="color: var(--text-secondary); font-size: 1.1rem;">คุณยังไม่ได้สมัครเรียนคอร์สใดเลย</p>
-                    <a href="index.html" class="btn btn-primary" style="margin-top: 1.5rem;">ไปเลือกคอร์สเรียนกัน!</a>
-                </div>
-            `;
-            // ซ่อน toolbar ถ้าไม่มีคอร์ส
-            const toolbar = document.getElementById('searchFilterBar');
-            if (toolbar) toolbar.style.display = 'none';
-            return;
+        if (response.ok && result.courses) {
+            // กรองมาเฉพาะคอร์สที่เรา enroll ไว้จริงๆ
+            allEnrolledCoursesData = result.courses.filter(c => c.is_enrolled > 0 || c.enrolled_at);
+            handleClassroomFilter(); // สั่งให้เริ่มจัดเรียงและแสดงผล
+        } else {
+            container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #EF4444;">โหลดข้อมูลไม่สำเร็จ</div>`;
         }
-
-        const stateCourses = window.WebtechState.getCourses();
-
-        container.innerHTML = enrolledCourses.map(course => {
-            const stateCourse = stateCourses.find(c => c.id === `c-${course.id}`);
-            const progress = stateCourse ? window.WebtechState.getCourseProgress(stateCourse) : 0;
-            const lessonsCount = stateCourse && stateCourse.lessons ? stateCourse.lessons.length : 0;
-            const completedCount = stateCourse && stateCourse.lessons ? stateCourse.lessons.filter(l => l.isCompleted).length : 0;
-            let barColor = progress === 100 ? 'var(--accent-green)' : 'var(--accent-purple)';
-
-            return `
-                <div class="card floating-ui" style="display:flex; flex-direction:column; cursor:pointer;" onclick="window.location.href='classroom.html?courseId=c-${course.id}'">
-                    <div style="height: 140px; border-radius: 8px; background: ${course.cover_image || 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)'}; margin-bottom: 1rem; display:flex; align-items:flex-end; padding:1rem; background-size: cover; background-position: center;">
-                        <span class="role-tag-mini" style="background:rgba(0,0,0,0.6); color:white;">${course.category}</span>
-                    </div>
-                    <h3 style="font-size: 1.2rem; margin-bottom: 0.5rem;">${course.title}</h3>
-                    
-                    <div class="progress-container" style="margin-top: auto; padding-top: 1rem;">
-                        <div class="progress-header" style="margin-bottom:0.4rem;">
-                            <span style="font-size:0.8rem;">ความก้าวหน้า</span>
-                            <span style="font-size:0.8rem; color:${barColor}; font-weight:700;">${progress}% (${completedCount}/${lessonsCount})</span>
-                        </div>
-                        <div class="progress-track" style="height:6px;">
-                            <div class="progress-bar" style="width: ${progress}%; background:${barColor}; box-shadow:0 0 5px ${barColor};"></div>
-                        </div>
-                    </div>
-                    
-                    <a href="classroom.html?courseId=c-${course.id}" class="btn btn-blue btn-sm" style="margin-top: 1rem; width: 100%; text-align: center; justify-content: center;">
-                        <i class="fa-solid fa-circle-play"></i> เข้าเรียน
-                    </a>
-                </div>
-            `;
-        }).join('');
-
-        // เรียก initSearchFilter หลัง render cards เสร็จแล้ว
-        initSearchFilter();
-
     } catch (err) {
         console.error(err);
-        container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #EF4444;">เกิดข้อผิดพลาดในการโหลดคอร์สเรียนของคุณ</div>`;
+        container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #EF4444;">ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้</div>`;
     }
+}
+
+// 2. ฟังก์ชันคัดกรอง และจัดเรียงข้อมูล
+// 🆕 ฟังก์ชันใหม่: สลับปุ่มหมวดหมู่
+function setClassroomCategory(cat) {
+    currentClassroomCategory = cat;
+    
+    // ลบสีปุ่มทั้งหมดก่อน
+    const btnIds = ['ALL', 'HTMLCSS', 'JS', 'Backend', 'Database', 'DevOps'];
+    btnIds.forEach(id => {
+        const btn = document.getElementById(`btnCat${id}`);
+        if(btn) btn.classList.remove('active');
+    });
+
+    // กำหนด ID ปุ่มที่เพิ่งกด เพื่อใส่สีไฮไลต์
+    let activeId = cat;
+    if(cat === 'HTML/CSS') activeId = 'HTMLCSS';
+    if(cat === 'JavaScript') activeId = 'JS';
+    
+    const activeBtn = document.getElementById(`btnCat${activeId}`);
+    if(activeBtn) activeBtn.classList.add('active');
+
+    // สั่งให้กรองข้อมูลใหม่
+    handleClassroomFilter();
+}
+
+// ฟังก์ชันคัดกรอง และจัดเรียงข้อมูล (อัปเดตแล้ว)
+function handleClassroomFilter() {
+    const keyword = (document.getElementById('classroomSearchInput')?.value || '').toLowerCase(); // 🆕 ดึงคำที่พิมพ์
+    const category = currentClassroomCategory; 
+    const status = document.getElementById('classroomFilterStatus')?.value || 'ALL';
+    const sortOrder = document.getElementById('classroomSortOrder')?.value || 'NEWEST';
+
+    let filtered = allEnrolledCoursesData.filter(course => {
+        const stateCourse = window.WebtechState.getCourseById(`c-${course.id}`);
+        const progress = stateCourse ? window.WebtechState.getCourseProgress(stateCourse) : 0;
+        const isFinished = progress === 100;
+
+        // 🆕 เช็คว่าชื่อคอร์สตรงกับที่พิมพ์ไหม
+        const matchSearch = course.title.toLowerCase().includes(keyword);
+        
+        const matchCategory = category === 'ALL' ? true : course.category === category;
+        
+        let matchStatus = true;
+        if (status === 'COMPLETED') matchStatus = isFinished;
+        if (status === 'LEARNING') matchStatus = !isFinished;
+
+        // ต้องผ่านเงื่อนไข ค้นหา + หมวดหมู่ + สถานะ ถึงจะโชว์
+        return matchSearch && matchCategory && matchStatus; 
+    });
+
+    filtered.sort((a, b) => {
+        const dateA = new Date(a.enrolled_at || 0);
+        const dateB = new Date(b.enrolled_at || 0);
+        
+        if (sortOrder === 'NEWEST') return dateB - dateA;
+        if (sortOrder === 'OLDEST') return dateA - dateB;
+        return 0;
+    });
+
+    renderEnrolledCoursesGrid(filtered); 
+}
+
+// 3. ฟังก์ชันวาดการ์ดคอร์สเรียน
+function renderEnrolledCoursesGrid(courses) {
+    const container = document.getElementById('enrolledCoursesGrid');
+    if (!container) return;
+
+    if (courses.length === 0) {
+        container.innerHTML = `
+            <div style="grid-column: 1 / -1; text-align: center; padding: 4rem 2rem; background: rgba(255,255,255,0.02); border-radius: var(--border-radius-md); border: 1px dashed rgba(255,255,255,0.1);">
+                <i class="fa-solid fa-box-open" style="font-size: 3rem; color: var(--text-muted); margin-bottom: 1rem;"></i>
+                <p style="color: var(--text-secondary);">ไม่พบคอร์สเรียนที่ตรงกับเงื่อนไข</p>
+            </div>
+        `;
+        return;
+    }
+
+    container.innerHTML = courses.map(course => {
+        const stateCourse = window.WebtechState.getCourseById(`c-${course.id}`);
+        const progress = stateCourse ? window.WebtechState.getCourseProgress(stateCourse) : 0;
+        const lessonsCount = stateCourse && stateCourse.lessons ? stateCourse.lessons.length : 0;
+        const completedCount = stateCourse && stateCourse.lessons ? stateCourse.lessons.filter(l => l.isCompleted).length : 0;
+
+        // แปลงวันที่ให้อ่านง่าย
+        const enrolledDate = course.enrolled_at 
+            ? new Date(course.enrolled_at).toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' }) 
+            : '-';
+
+        let barColor = 'var(--accent-purple)';
+        if (progress === 100) barColor = 'var(--accent-green)';
+
+        return `
+            <div class="card floating-ui" style="display: flex; flex-direction: column;">
+                <div class="course-card-cover" style="background: ${course.cover_image || 'var(--accent-purple)'}; height: 120px; display: flex; align-items: flex-end; padding: 1rem; border-radius: 12px; margin-bottom: 1rem; position: relative;">
+                    <span class="course-card-tag" style="position: absolute; top: 1rem; left: 1rem; background: rgba(11, 15, 25, 0.7); backdrop-filter: blur(4px); padding: 0.25rem 0.75rem; border-radius: 50px; font-size: 0.75rem; font-weight: 700; border: 1px solid rgba(255, 255, 255, 0.1); color: white;">${course.category}</span>
+                </div>
+                <h3 class="course-card-title" style="font-size: 1.15rem; margin-bottom: 0.5rem; line-height: 1.4;">${course.title}</h3>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1.5rem;"><i class="fa-regular fa-calendar-check"></i> สมัครเมื่อ: <span style="color:var(--text-secondary);">${enrolledDate}</span></p>
+                
+                <div class="progress-container" style="margin-top: auto; margin-bottom: 1.25rem;">
+                    <div class="progress-header" style="margin-bottom:0.2rem; display: flex; justify-content: space-between;">
+                        <span style="font-size:0.75rem; color: var(--text-secondary);">ความก้าวหน้า</span>
+                        <span style="font-size:0.75rem; color:${barColor}; font-weight:700;">${progress}% (${completedCount}/${lessonsCount})</span>
+                    </div>
+                    <div class="progress-track" style="height:6px; background: rgba(255,255,255,0.1); border-radius: 10px; overflow: hidden;">
+                        <div class="progress-bar" style="width: ${progress}%; background:${barColor}; height: 100%; border-radius: 10px;"></div>
+                    </div>
+                </div>
+
+                <div style="display: flex; gap: 0.5rem;">
+                    <button onclick="window.location.href='classroom.html?courseId=c-${course.id}'" class="btn btn-primary btn-sm" style="flex: 1; justify-content: center;">
+                        <i class="fa-solid fa-circle-play"></i> เข้าเรียนต่อ
+                    </button>
+                </div>
+            </div>
+        `;
+    }).join('');
 }
 
 // ===== LOAD COURSE AND DEFAULT FIRST LESSON =====

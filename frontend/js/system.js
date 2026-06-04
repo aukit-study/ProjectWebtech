@@ -1,9 +1,9 @@
 let allSystemUsersData = []; // เก็บข้อมูลสมาชิกทั้งหมด
+let currentRoleFilter = 'ALL'; // 🆕 เก็บค่าว่าตอนนี้กดปุ่มบทบาทไหนอยู่
 
 document.addEventListener('DOMContentLoaded', () => {
     verifySystemAdminPermissions();
 
-    // ผูก Event ให้ช่องค้นหาและ Dropdown
     const searchInput = document.getElementById('systemSearchInput');
     const sortFilter = document.getElementById('systemSortFilter');
 
@@ -37,8 +37,8 @@ async function fetchSystemUsersData() {
         const result = await response.json();
         
         if (response.ok && result.data) {
-            allSystemUsersData = result.data; // บันทึกข้อมูลต้นฉบับ
-            handleSystemUserFilter(); // เรียกฟังก์ชันกรอง/เรียง เพื่อวาดตาราง
+            allSystemUsersData = result.data; 
+            handleSystemUserFilter(); 
         } else {
             fallbackLocalUsers();
         }
@@ -58,44 +58,56 @@ function fallbackLocalUsers() {
     handleSystemUserFilter();
 }
 
+// 🆕 ฟังก์ชันใหม่: จัดการตอนกดปุ่ม Role Filter
+function setRoleFilter(role) {
+    currentRoleFilter = role; // อัปเดตค่าบทบาทปัจจุบัน
+    
+    // รีเซ็ตสีปุ่มทั้งหมดให้เป็นสีเทา
+    document.getElementById('btnRoleALL').classList.remove('active');
+    document.getElementById('btnRoleADMIN').classList.remove('active');
+    document.getElementById('btnRoleSTUDENT').classList.remove('active');
+    
+    // ไฮไลต์สีม่วงที่ปุ่มที่เพิ่งกด
+    document.getElementById(`btnRole${role}`).classList.add('active');
+    
+    // สั่งให้ตารางกรองข้อมูลใหม่
+    handleSystemUserFilter();
+}
+
 // 4. 🌟 ฟังก์ชันหลักสำหรับค้นหา และจัดเรียงข้อมูล 🌟
 function handleSystemUserFilter() {
     const keyword = (document.getElementById('systemSearchInput')?.value || '').toLowerCase();
+    const roleFilterVal = currentRoleFilter; // 🆕 ดึงค่าจากตัวแปรแทน (เพราะไม่มี Dropdown แล้ว)
     const sortFilterVal = document.getElementById('systemSortFilter')?.value || 'NEWEST';
 
-    // Step A: คัดกรองข้อมูล (Search & Role Filter)
     let filtered = allSystemUsersData.filter(user => {
         const safeUsername = (user.username || '').toLowerCase();
         const safeFullname = (user.fullname || '').toLowerCase();
         const safeEmail = (user.email || '').toLowerCase();
         const safeRole = (user.role || '').toLowerCase();
 
-        // หาคำที่ตรงกับ ชื่อ, username หรือ อีเมล
         const matchSearch = safeUsername.includes(keyword) || safeFullname.includes(keyword) || safeEmail.includes(keyword);
         
-        // กรองตามบทบาท
         let matchRole = true;
-        if (sortFilterVal === 'ADMIN_ONLY') matchRole = safeRole === 'admin';
-        if (sortFilterVal === 'STUDENT_ONLY') matchRole = safeRole === 'student';
+        if (roleFilterVal === 'ADMIN') matchRole = safeRole === 'admin';
+        if (roleFilterVal === 'STUDENT') matchRole = safeRole === 'student';
 
         return matchSearch && matchRole;
     });
 
-    // Step B: จัดเรียงข้อมูล (Sorting)
     filtered.sort((a, b) => {
         if (sortFilterVal === 'NEWEST') {
-            return new Date(b.created_at || 0) - new Date(a.created_at || 0); // ใหม่ไปเก่า
+            return new Date(b.created_at || 0) - new Date(a.created_at || 0); 
         } else if (sortFilterVal === 'OLDEST') {
-            return new Date(a.created_at || 0) - new Date(b.created_at || 0); // เก่าไปใหม่
+            return new Date(a.created_at || 0) - new Date(b.created_at || 0); 
         } else if (sortFilterVal === 'MOST_COURSES') {
-            return (b.total_enrolled || 0) - (a.total_enrolled || 0); // มากไปน้อย
+            return (b.total_enrolled || 0) - (a.total_enrolled || 0); 
         } else if (sortFilterVal === 'LEAST_COURSES') {
-            return (a.total_enrolled || 0) - (b.total_enrolled || 0); // น้อยไปมาก
+            return (a.total_enrolled || 0) - (b.total_enrolled || 0); 
         }
         return 0; 
     });
 
-    // ส่งข้อมูลที่ถูกกรองและเรียงแล้วไปวาดตาราง
     renderSystemUsersTable(filtered);
 }
 
@@ -109,7 +121,6 @@ function renderSystemUsersTable(users) {
         return;
     }
 
-    // อัปเดตสถิติด้านบนตามข้อมูล "ทั้งหมด" (ไม่ได้อิงตามผลกรอง)
     const studentCount = allSystemUsersData.filter(u => (u.role || '').toLowerCase() === 'student').length;
     const statUsers = document.getElementById('totalUsersStat');
     if (statUsers) statUsers.innerText = allSystemUsersData.length;
@@ -171,10 +182,7 @@ async function openUserHistoryModal(userId, fullname, email, joinedDate) {
     const tbody = document.getElementById('userHistoryTableBody');
     const token = localStorage.getItem('webtech_token');
     
-    if(!modal || !tbody) {
-        console.error("Modal element not found!");
-        return;
-    }
+    if(!modal || !tbody) return;
 
     document.getElementById('historyModalUserName').innerText = fullname;
     document.getElementById('historyModalUserId').innerText = '#' + userId;
@@ -188,7 +196,6 @@ async function openUserHistoryModal(userId, fullname, email, joinedDate) {
         const response = await fetch(`/api/admin/users/${userId}/history`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
-        
         const result = await response.json();
         
         if (response.ok && result.data && result.data.length > 0) {
