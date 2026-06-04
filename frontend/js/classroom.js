@@ -24,99 +24,25 @@ document.addEventListener('DOMContentLoaded', () => {
         if (overviewEl) overviewEl.style.display = 'none';
         if (mainEl) mainEl.style.display = 'block';
         // ซ่อน toolbar เมื่ออยู่ในโหมดดูบทเรียน
-        const toolbar = document.getElementById('searchFilterBar');
+        const toolbar = document.querySelector('.modern-toolbar'); 
         if (toolbar) toolbar.style.display = 'none';
         loadClassroomCourse(courseId);
     }
 
     initConfettiCanvas();
 
-    initConfettiCanvas();
-
-    // 🌟 [เพิ่มใหม่] ผูก Event ให้ Dropdown ทำงานเมื่อมีการเปลี่ยนค่า 🌟
+    // 🌟 ผูก Event ให้ Search และ Dropdown 🌟
+    const searchInput = document.getElementById('classroomSearchInput'); // ตัวจับช่องค้นหา
     const filterStatus = document.getElementById('classroomFilterStatus');
 
+    // สั่งให้เรียกฟังก์ชันกรองข้อมูล ทันทีที่มีการพิมพ์ (keyup) หรือเปลี่ยนค่า (change)
+    if (searchInput) searchInput.addEventListener('keyup', handleClassroomFilter); 
     if (filterStatus) filterStatus.addEventListener('change', handleClassroomFilter);
     if (sortOrder) sortOrder.addEventListener('change', handleClassroomFilter);
 });
 
 // ===== SEARCH & FILTER =====
-function initSearchFilter() {
-    const toolbar = document.getElementById('searchFilterBar');
-    const searchInput = document.getElementById('searchInput');
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    let currentFilter = 'all';
 
-    // แสดง toolbar
-    if (toolbar) toolbar.style.display = 'flex';
-
-    function applyFilter() {
-        const keyword = searchInput ? searchInput.value.toLowerCase().trim() : '';
-        const cards = document.querySelectorAll('#enrolledCoursesGrid .card');
-        const noResultsMsg = document.getElementById('noResultsMsg');
-        let visibleCount = 0;
-
-        cards.forEach(card => {
-            // ดึงชื่อคอร์สจาก h3
-            const title = card.querySelector('h3')?.textContent.toLowerCase() || '';
-            // ดึง tag หมวดหมู่จาก role-tag-mini
-            const tag = card.querySelector('.role-tag-mini')?.textContent.toLowerCase() || '';
-            // ดึง progress จาก progress-bar width style หรือ text
-            const progressText = card.querySelector('[style*="width:"]');
-            const progressVal = parseFloat(progressText?.style?.width) || 0;
-
-            const matchKeyword = !keyword || title.includes(keyword);
-
-            let matchFilter = false;
-            switch (currentFilter) {
-                case 'all':
-                    matchFilter = true;
-                    break;
-                case 'javascript':
-                    matchFilter = tag.includes('javascript');
-                    break;
-                case 'htmlcss':
-                    matchFilter = tag.includes('html') || tag.includes('css');
-                    break;
-                case 'react':
-                    matchFilter = tag.includes('react');
-                    break;
-                case 'done':
-                    matchFilter = progressVal >= 100;
-                    break;
-                case 'inprogress':
-                    matchFilter = progressVal > 0 && progressVal < 100;
-                    break;
-                default:
-                    matchFilter = true;
-            }
-
-            const visible = matchKeyword && matchFilter;
-            card.style.display = visible ? '' : 'none';
-            if (visible) visibleCount++;
-        });
-
-        // แสดง/ซ่อน no-results message
-        if (noResultsMsg) {
-            noResultsMsg.style.display = visibleCount === 0 ? 'block' : 'none';
-        }
-    }
-
-    // Search input listener
-    if (searchInput) {
-        searchInput.addEventListener('input', applyFilter);
-    }
-
-    // Filter button listeners
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            filterBtns.forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            currentFilter = btn.dataset.filter;
-            applyFilter();
-        });
-    });
-}
 
 // ===== RENDER ENROLLED COURSES OVERVIEW =====
 
