@@ -40,13 +40,20 @@ async function fetchAdminCourses() {
     try {
         const response = await fetch('/api/courses');
         const result = await response.json();
+        
         if (response.ok && result.courses) {
+            // 🌟 แก้ไขตรงนี้: เปลี่ยนคำว่า data เป็น result ให้ตรงกัน
+            allAdminCoursesData = result.courses;
             return result.courses;
         }
     } catch (error) {
         console.error('Error fetching admin courses:', error);
     }
-    return window.WebtechState.getCourses();
+    
+    // 🌟 เพิ่มความปลอดภัย: กรณี API พัง ให้เอาข้อมูลสำรอง (Fallback) มาใส่ระบบกรองด้วย
+    const fallbackCourses = window.WebtechState.getCourses();
+    allAdminCoursesData = fallbackCourses;
+    return fallbackCourses;
 }
 
 function renderAdminCoursesTable(courses) {
@@ -332,4 +339,44 @@ async function openUserHistoryModal(userId, fullname) {
 function closeUserHistoryModal() {
     const modal = document.getElementById('userHistoryModal');
     if (modal) modal.classList.remove('active');
+}
+
+// ==========================================
+// ระบบค้นหาและกรองคอร์สเรียน (Search & Filter)
+// ==========================================
+
+// 1. สร้างตัวแปรเก็บข้อมูลคอร์สทั้งหมดตอนที่ดึงมาจาก API สำเร็จ
+let allAdminCoursesData = []; 
+
+// 2. ผูกการทำงาน (Events) ให้กับช่องค้นหาและ Dropdown
+document.addEventListener('DOMContentLoaded', () => {
+    const searchInput = document.getElementById('adminSearchInput');
+    const filterCat = document.getElementById('adminFilterCategory');
+    const filterDiff = document.getElementById('adminFilterDifficulty');
+
+    // ถ้าพิมพ์ข้อความ หรือเปลี่ยน Dropdown ให้เรียกฟังก์ชันกรองข้อมูลทันที
+    if (searchInput) searchInput.addEventListener('keyup', handleAdminCourseFilter); 
+    if (filterCat) filterCat.addEventListener('change', handleAdminCourseFilter);
+    if (filterDiff) filterDiff.addEventListener('change', handleAdminCourseFilter);
+});
+
+// 3. ฟังก์ชันหลักในการกรองข้อมูล
+function handleAdminCourseFilter() {
+    // อ่านค่าที่แอดมินพิมพ์หรือเลือก
+    const keyword = document.getElementById('adminSearchInput').value.toLowerCase();
+    const category = document.getElementById('adminFilterCategory').value;
+    const difficulty = document.getElementById('adminFilterDifficulty').value;
+
+    // ทำการคัดกรองข้อมูลจาก allAdminCoursesData
+    const filteredCourses = allAdminCoursesData.filter(course => {
+        const matchSearch = course.title.toLowerCase().includes(keyword);
+        const matchCategory = (category === 'ALL') ? true : (course.category === category);
+        const matchDifficulty = (difficulty === 'ALL') ? true : (course.difficulty === difficulty);
+
+        // ต้องผ่านทั้ง 3 เงื่อนไขถึงจะถูกนำมาแสดง
+        return matchSearch && matchCategory && matchDifficulty;
+    });
+
+    // ส่งข้อมูลที่กรองเสร็จแล้ว ไปให้ฟังก์ชันวาดตารางทำงานต่อ
+    renderAdminCoursesTable(filteredCourses); 
 }

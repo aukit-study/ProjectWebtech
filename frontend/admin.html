@@ -134,6 +134,28 @@
             margin: 2rem 0;
             backdrop-filter: blur(12px);
         }
+
+        /* 🌟 ปรับแต่ง Dropdown ให้เข้ากับ Dark Theme */
+        .form-select {
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        
+        /* เปลี่ยนสีพื้นหลังของตัวเลือกให้เป็นสีเข้ม */
+        .form-select option {
+            background-color: #0f172a; /* สีพื้นหลังหลักของเว็บ */
+            color: #f8fafc; /* สีข้อความสีขาว */
+            font-size: 0.95rem;
+            padding: 10px;
+        }
+
+        /* เวลากดคลิก (Focus) ให้ตัวกล่องเป็นสีเข้มขึ้นนิดนึง เพื่อให้อ่านง่าย */
+        .form-select:focus {
+            background-color: #0f172a !important; 
+            border-color: var(--accent-purple) !important;
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.3) !important;
+            outline: none;
+        }
     </style>
 </head>
 
@@ -228,6 +250,30 @@
                 <h3 style="font-family:var(--font-heading); font-size:1.25rem;"><i class="fa-solid fa-table-list"
                         style="color:var(--accent-cyan); margin-right:0.5rem;"></i> ทะเบียนรายการวิชาเรียนบนแพลตฟอร์ม
                 </h3>
+
+                <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: var(--border-radius-md); border: 1px solid rgba(255,255,255,0.05);">
+                    
+                    <div style="flex: 1; min-width: 250px; position: relative;">
+                        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 1.2rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                        <input type="text" id="adminSearchInput" class="form-input" placeholder="ค้นหาชื่อคอร์สเรียน..." style="padding-left: 2.8rem; border-radius: 50px; background: rgba(255,255,255,0.03);">
+                    </div>
+
+                    <select id="adminFilterCategory" class="form-input form-select" style="width: auto; min-width: 150px; border-radius: 50px; background: rgba(255,255,255,0.03);">
+                        <option value="ALL">ทุกหมวดหมู่</option>
+                        <option value="HTML/CSS">HTML/CSS</option>
+                        <option value="JavaScript">JavaScript</option>
+                        <option value="Backend">Backend</option>
+                        <option value="Database">Database</option>
+                        <option value="DevOps">DevOps</option>
+                    </select>
+
+                    <select id="adminFilterDifficulty" class="form-input form-select" style="width: auto; min-width: 150px; border-radius: 50px; background: rgba(255,255,255,0.03);">
+                        <option value="ALL">ทุกระดับความยาก</option>
+                        <option value="Beginner">Beginner</option>
+                        <option value="Intermediate">Intermediate</option>
+                        <option value="Advanced">Advanced</option>
+                    </select>
+                </div>
 
                 <div class="table-responsive">
                     <table>
