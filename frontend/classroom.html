@@ -514,6 +514,27 @@
             border-color: var(--accent-purple);
             box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
         }
+        /* 🌟 ปรับแต่ง Dropdown ให้เข้ากับ Dark Theme */
+        .form-select {
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        
+        /* เปลี่ยนสีพื้นหลังของตัวเลือกให้เป็นสีเข้ม */
+        .form-select option {
+            background-color: #0f172a; /* สีพื้นหลังหลักของเว็บ */
+            color: #f8fafc; /* สีข้อความสีขาว */
+            font-size: 0.95rem;
+            padding: 10px;
+        }
+
+        /* เวลากดคลิก (Focus) ให้ตัวกล่องเป็นสีเข้มขึ้นนิดนึง */
+        .form-select:focus {
+            background-color: #0f172a !important; 
+            border-color: var(--accent-purple) !important;
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.3) !important;
+            outline: none;
+        }
     </style>
 </head>
 <body>
