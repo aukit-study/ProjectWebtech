@@ -26,14 +26,22 @@ function verifyAdminPermissions() {
 async function refreshAdminDashboard() {
     const courses = await fetchAdminCourses();
 
-    // 1. Render Stats Metrics
-    document.getElementById('statAdminTotalCourses').innerText = courses.length;
+    // 1. อัปเดตสถิติจำนวนคอร์สทั้งหมด
+    const totalCoursesEl = document.getElementById('statAdminTotalCourses');
+    if (totalCoursesEl) totalCoursesEl.innerText = courses.length;
 
-    // 2. Render Registry Table Row Data
+    // 🌟 [เพิ่มใหม่] 2. คำนวณหาจำนวน "หมวดหมู่" ที่ไม่ซ้ำกัน แล้วอัปเดตขึ้นหน้าจอ
+    const uniqueCategories = new Set(courses.map(c => c.category)).size;
+    const totalCategoriesEl = document.getElementById('statAdminTotalCategories');
+    if (totalCategoriesEl) totalCategoriesEl.innerText = `${uniqueCategories} หมวด`;
+
+    // 3. วาดตารางคอร์สเรียน
     renderAdminCoursesTable(courses);
 
-    // 🌟 3. [เพิ่มใหม่] สั่งรันฟังก์ชันดึงข้อมูลนักเรียนจาก Backend SQLite
-    fetchAndRenderUsers();
+    // 4. สั่งรันฟังก์ชันดึงข้อมูลนักเรียนจาก Backend
+    if (typeof fetchAndRenderUsers === 'function') {
+        fetchAndRenderUsers();
+    }
 }
 
 async function fetchAdminCourses() {
@@ -88,21 +96,38 @@ function renderAdminCoursesTable(courses) {
                         <button onclick="openEditCourseModal(${course.id})" class="btn btn-secondary btn-sm" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
                             <i class="fa-solid fa-edit" style="color:var(--accent-cyan);"></i> แก้ไข
                         </button>
-                        <button onclick="handleDeleteCourseClick(${course.id})" class="btn btn-danger btn-sm" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
-                            <i class="fa-solid fa-trash-can"></i> ลบ
-                        </button>
+                        <button onclick="deleteCourse(${course.id})" class="btn btn-danger btn-sm" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
+    <i class="fa-solid fa-trash-can"></i> ลบ
+</button>
                     </div>
                 </td>
             </tr>
         `;
     }).join('');
 }
-async function deleteCourse(courseId) {
-    if (!confirm('ต้องการลบคอร์สนี้ใช่ไหม?')) {
-        return;
+// 1. ฟังก์ชันเปิดกล่อง Modal ถามความแน่ใจ (แทนที่ confirm เดิม)
+function deleteCourse(courseId) {
+    const modal = document.getElementById('customConfirmModal');
+    if (modal) {
+        modal.classList.add('active');
+        
+        // ผูกคำสั่งให้ปุ่ม "ใช่, ลบคอร์สเลย" ใน HTML
+        document.getElementById('confirmDeleteBtn').onclick = function() {
+            closeCustomConfirm();
+            executeDeleteCourse(courseId);
+        };
     }
+}
 
-    const token = localStorage.getItem('token');
+// 2. ฟังก์ชันปิดกล่อง Modal
+function closeCustomConfirm() {
+    const modal = document.getElementById('customConfirmModal');
+    if (modal) modal.classList.remove('active');
+}
+
+// 3. ฟังก์ชันลงมือลบจริงๆ (ย้ายโค้ด API เดิมของแบงค์มาไว้ตรงนี้)
+async function executeDeleteCourse(courseId) {
+    const token = localStorage.getItem('webtech_token'); // ใช้ key เดิมของแบงค์
 
     try {
         const response = await fetch(`/api/courses/${courseId}`, {
@@ -115,14 +140,19 @@ async function deleteCourse(courseId) {
         const result = await response.json();
 
         if (response.ok) {
-            alert('ลบคอร์สสำเร็จ');
-            location.reload();
+            // ใช้ showToast แทน alert() เพื่อความสวยงาม
+            showToast('ลบคอร์สสำเร็จ', 'ลบข้อมูลออกจากฐานข้อมูลแล้ว', 'success');
+            
+            // รอ 1.5 วินาทีให้โชว์แจ้งเตือนสวยๆ ก่อน แล้วค่อยรีเฟรชหน้า
+            setTimeout(() => {
+                location.reload(); 
+            }, 1500);
         } else {
-            alert(result.message);
+            showToast('ลบไม่สำเร็จ', result.message, 'error');
         }
     } catch (error) {
         console.error(error);
-        alert('เกิดข้อผิดพลาด');
+        showToast('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
     }
 }
 
@@ -261,29 +291,7 @@ async function handleCrudFormSubmit(e) {
 }
 
 // --- DELETE ACTION ---
-async function handleDeleteCourseClick(courseId) {
-    if (!confirm(`คุณมั่นใจหรือไม่ที่จะลบคอร์สนี้? ข้อมูลจะถูกลบถาวร!`)) return;
 
-    const token = localStorage.getItem('webtech_token');
-
-    try {
-        const response = await fetch(`/api/courses/${courseId}`, {
-            method: 'DELETE',
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
-
-        const result = await response.json();
-
-        if (response.ok) {
-            window.showToast("ลบคอร์สสำเร็จ", "นำหลักสูตรออกจากระบบเรียบร้อย", "error");
-            refreshAdminDashboard();
-        } else {
-            window.showToast("เกิดข้อผิดพลาด", result.message || "ไม่สามารถลบได้", "error");
-        }
-    } catch (err) {
-        window.showToast("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อ server ได้", "error");
-    }
-}
 
 // ==========================================
 // 🌟 ส่วนระบบจัดการสมาชิก (API Integration)
