@@ -23,20 +23,19 @@ class CourseService {
 
     // สร้างคอร์สเรียนใหม่ (Admin only)
     static async createCourse(db, courseData, userId) {
-        const { title, category, difficulty, duration, description, cover_image, max_capacity, price } = courseData;
-        
+        const { title, category, difficulty, description, cover_image, max_capacity, price } = courseData;
+
         const result = await db.run(
-            `INSERT INTO courses (title, category, difficulty, duration, description, cover_image, price, max_capacity, created_by)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO courses (title, category, difficulty, description, cover_image, price, max_capacity, created_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-                title, 
-                category, 
-                difficulty, 
-                duration, 
-                description, 
-                cover_image || null, 
+                title,
+                category,
+                difficulty,
+                description,
+                cover_image || null,
                 price !== undefined ? parseFloat(price) : 0,
-                max_capacity !== undefined ? parseInt(max_capacity) : 10, 
+                max_capacity !== undefined ? parseInt(max_capacity) : 10,
                 userId
             ]
         );
@@ -46,7 +45,7 @@ class CourseService {
 
     // แก้ไขข้อมูลคอร์สเรียน (Admin only)
     static async updateCourse(db, id, courseData) {
-        const { title, category, difficulty, duration, description, cover_image, max_capacity, price } = courseData;
+        const { title, category, difficulty, description, cover_image, max_capacity, price } = courseData;
 
         // ตรวจสอบว่าคอร์สมีตัวตนอยู่ในระบบหรือไม่
         const existingCourse = await db.get('SELECT id, price FROM courses WHERE id = ?', [id]);
@@ -58,17 +57,16 @@ class CourseService {
 
         await db.run(
             `UPDATE courses 
-             SET title = ?, category = ?, difficulty = ?, duration = ?, description = ?, cover_image = ?, price = ?, max_capacity = ? 
+             SET title = ?, category = ?, difficulty = ?, description = ?, cover_image = ?, price = ?, max_capacity = ? 
              WHERE id = ?`,
             [
-                title, 
-                category, 
-                difficulty, 
-                duration, 
-                description, 
-                cover_image !== undefined ? cover_image : null, 
+                title,
+                category,
+                difficulty,
+                description,
+                cover_image !== undefined ? cover_image : null,
                 finalPrice,
-                max_capacity !== undefined ? parseInt(max_capacity) : 10, 
+                max_capacity !== undefined ? parseInt(max_capacity) : 10,
                 id
             ]
         );
@@ -125,7 +123,7 @@ class CourseService {
             'SELECT id FROM enrollments WHERE user_id = ? AND course_id = ?',
             [userId, courseId]
         );
-        
+
         if (!existingEnrollment) {
             throw new Error('NOT_ENROLLED');
         }

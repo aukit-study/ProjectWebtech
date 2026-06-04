@@ -69,7 +69,6 @@ async function loadStudentProfile() {
 
     document.getElementById('profileRankTitle').innerText = rankTitle;
     document.getElementById('statCoursesEnrolled').innerText = enrolledCoursesCount;
-    document.getElementById('statStudyHours').innerText = currentUser.studyHours || 0.0;
     
     // 4. Update EXP Bar
     const percentExp = Math.min(Math.round((totalLessonsCompleted / nextMilestone) * 100), 100);

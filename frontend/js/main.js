@@ -21,7 +21,7 @@ function renderHeaderSession() {
         const roleTag = isAdmin ? '<span class="role-tag-mini admin">Admin</span>' : '<span class="role-tag-mini">Student</span>';
         const displayName = currentUser.fullname || currentUser.username || 'User';
         const initials = displayName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'U';
-        
+
         navActions.innerHTML = `
             <div class="cart-icon-wrapper" onclick="CartManager.toggleCartModal()" style="position: relative; cursor: pointer; color: white; margin-right: 1.5rem; display: flex; align-items: center; justify-content: center;">
                 <i class="fa-solid fa-cart-shopping" style="font-size: 1.2rem;"></i>
@@ -36,7 +36,7 @@ function renderHeaderSession() {
                 <i class="fas fa-sign-out-alt"></i> ออกจากระบบ
             </button>
         `;
-        
+
         // Update Hero Buttons (if on index.html)
         const heroActionButtons = document.getElementById('heroActionButtons');
         if (heroActionButtons) {
@@ -54,7 +54,7 @@ function renderHeaderSession() {
                 <i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ
             </a>
         `;
-        
+
         // Update Hero Buttons (if on index.html)
         const heroActionButtons = document.getElementById('heroActionButtons');
         if (heroActionButtons) {
@@ -69,7 +69,7 @@ function renderHeaderSession() {
 // --- CART MANAGER SYSTEM ---
 const CartManager = {
     items: [],
-    
+
     init() {
         this.loadCart();
         this.createCartModal();
@@ -107,7 +107,6 @@ const CartManager = {
         this.items.push(course);
         this.saveCart();
         showToast("เพิ่มสำเร็จ", `เพิ่ม "${course.title}" ลงในตะกร้า`, "success");
-        this.openCartModal();
     },
 
     removeFromCart(courseId) {
@@ -158,7 +157,7 @@ const CartManager = {
                 </div>
             </div>
         `;
-        
+
         document.body.insertAdjacentHTML('beforeend', modalHTML);
     },
 
@@ -166,7 +165,7 @@ const CartManager = {
         const container = document.getElementById('cartItemsContainer');
         const priceLabel = document.getElementById('cartTotalPrice');
         const checkoutBtn = document.getElementById('cartCheckoutBtn');
-        
+
         if (!container) return;
 
         if (this.items.length === 0) {
@@ -199,43 +198,43 @@ const CartManager = {
         }).join('');
 
         const total = this.getTotalPrice();
-const itemCount = this.items.length;
+        const itemCount = this.items.length;
 
-let discountPercent = 0;
-let discountReason = '';
+        let discountPercent = 0;
+        let discountReason = '';
 
-if (itemCount > 3 && total > 1500) {
-    discountPercent = 15;
-    discountReason = 'ยอดรวมเกิน ฿1,500 และ ซื้อมากกว่า 3 คอร์ส';
-} else if (total > 1500) {
-    discountPercent = 10;
-    discountReason = 'ยอดรวมเกิน ฿1,500';
-} else if (itemCount > 3) {
-    discountPercent = 5;
-    discountReason = 'ซื้อมากกว่า 3 คอร์ส';
-}
+        if (itemCount > 3 && total > 1500) {
+            discountPercent = 15;
+            discountReason = 'ยอดรวมเกิน ฿1,500 และ ซื้อมากกว่า 3 คอร์ส';
+        } else if (total > 1500) {
+            discountPercent = 10;
+            discountReason = 'ยอดรวมเกิน ฿1,500';
+        } else if (itemCount > 3) {
+            discountPercent = 5;
+            discountReason = 'ซื้อมากกว่า 3 คอร์ส';
+        }
 
-if (discountPercent > 0) {
-    const discountAmount = Math.round(total * discountPercent / 100);
-    const finalTotal = total - discountAmount;
-    priceLabel.innerHTML = `
+        if (discountPercent > 0) {
+            const discountAmount = Math.round(total * discountPercent / 100);
+            const finalTotal = total - discountAmount;
+            priceLabel.innerHTML = `
         <div style="text-align:right;">
             <div style="text-decoration:line-through; color:#888; font-size:0.85rem;">฿${total.toLocaleString()}</div>
             <div style="color:#10B981; font-size:1.25rem; font-weight:bold;">฿${finalTotal.toLocaleString()}</div>
             <div style="color:#10B981; font-size:0.75rem;">🏷️ ${discountReason} ลด ${discountPercent}%</div>
         </div>
     `;
-} else {
-    priceLabel.innerText = new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(total);
-}
-checkoutBtn.disabled = false;
+        } else {
+            priceLabel.innerText = new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(total);
+        }
+        checkoutBtn.disabled = false;
     },
 
     toggleCartModal() {
         const modal = document.getElementById('cartModalWrapper');
         if (modal) modal.style.display = modal.style.display === 'none' ? 'flex' : 'none';
     },
-    
+
     openCartModal() {
         const modal = document.getElementById('cartModalWrapper');
         if (modal) modal.style.display = 'flex';
@@ -248,7 +247,7 @@ checkoutBtn.disabled = false;
 
     async handleCheckout() {
         if (this.items.length === 0) return;
-        
+
         const currentUser = window.WebtechState.getCurrentUser();
         if (!currentUser) {
             showToast("กรุณาเข้าสู่ระบบ", "คุณต้องล็อกอินก่อนทำการจองเวิร์กชอป", "error");
@@ -308,16 +307,16 @@ checkoutBtn.disabled = false;
                 }
 
             } else if (response.status === 409) {
-    if (result.pricing) {
-        const p = result.pricing;
-        const discountLine = p.discountPercent > 0
-            ? ` | ลด ${p.discountPercent}% = -฿${p.discountAmount} → ฿${p.recalculatedTotal}`
-            : ' | ไม่มีส่วนลด';
-        showToast("สมัครไปแล้ว", `ยอดเดิม ฿${p.originalTotal}${discountLine}`, "error");
-    } else {
-        showToast("ไม่สามารถจองได้", result.message, "error");
-    }
-}
+                if (result.pricing) {
+                    const p = result.pricing;
+                    const discountLine = p.discountPercent > 0
+                        ? ` | ลด ${p.discountPercent}% = -฿${p.discountAmount} → ฿${p.recalculatedTotal}`
+                        : ' | ไม่มีส่วนลด';
+                    showToast("สมัครไปแล้ว", `ยอดเดิม ฿${p.originalTotal}${discountLine}`, "error");
+                } else {
+                    showToast("ไม่สามารถจองได้", result.message, "error");
+                }
+            }
 
         } catch (err) {
             showToast("เชื่อมต่อล้มเหลว", "โปรดลองใหม่อีกครั้ง", "error");
@@ -344,7 +343,7 @@ function handleHeaderLogout() {
 function setupMobileNav() {
     const toggle = document.querySelector('.menu-toggle');
     const menu = document.querySelector('.nav-menu');
-    
+
     if (toggle && menu) {
         toggle.addEventListener('click', () => {
             menu.style.display = menu.style.display === 'flex' ? 'none' : 'flex';
@@ -357,7 +356,7 @@ function setupMobileNav() {
 function highlightActiveLink() {
     const currentPath = window.location.pathname.split("/").pop();
     const navLinks = document.querySelectorAll('.nav-link');
-    
+
     navLinks.forEach(link => {
         const href = link.getAttribute('href');
         if (href === currentPath || (currentPath === '' && href === 'index.html')) {
@@ -381,7 +380,7 @@ function showToast(title, message, type = 'info') {
             display: flex;
             flex-direction: column;
             gap: 1rem;
-            z-index: 9999;
+            z-index: 1;
             pointer-events: none;
         `;
         document.body.appendChild(container);
@@ -389,11 +388,11 @@ function showToast(title, message, type = 'info') {
 
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    
+
     let icon = '<i class="fas fa-info-circle"></i>';
     let borderColor = 'var(--accent-cyan)';
     let glowShadow = 'rgba(6, 182, 212, 0.2)';
-    
+
     if (type === 'success') {
         icon = '<i class="fas fa-check-circle"></i>';
         borderColor = 'var(--accent-green)';

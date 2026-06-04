@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -24,7 +25,7 @@
             padding: 2.5rem;
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 30px rgba(139, 92, 246, 0.1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(139, 92, 246, 0.1);
             position: relative;
             z-index: 1;
         }
@@ -77,8 +78,15 @@
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .auth-btn {
@@ -87,6 +95,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <header>
@@ -119,16 +128,21 @@
                 <form id="loginForm" class="auth-form active" onsubmit="handleLoginSubmit(event)">
                     <div class="form-group">
                         <label class="form-label">ชื่อผู้ใช้ (Username)</label>
-                        <input type="text" id="loginUsername" class="form-input" placeholder="กรอกชื่อผู้ใช้ เช่น student หรือ admin" required>
+                        <input type="text" id="loginUsername" class="form-input"
+                            placeholder="กรอกชื่อผู้ใช้ เช่น student หรือ admin" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">รหัสผ่าน (Password)</label>
-                        <input type="password" id="loginPassword" class="form-input" placeholder="กรอกรหัสผ่าน" required>
+                        <input type="password" id="loginPassword" class="form-input" placeholder="กรอกรหัสผ่าน"
+                            required>
                     </div>
-                    <div style="background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: var(--border-radius-sm); padding: 0.75rem; font-size: 0.75rem; margin-bottom: 1.5rem; color: var(--text-secondary);">
-                        <span style="font-weight: 700; color: var(--accent-cyan); display:block; margin-bottom:0.25rem;"><i class="fa-solid fa-circle-info"></i> บัญชีทดสอบสำหรับตรวจการบ้าน:</span>
-                        • นักเรียน: <strong>student</strong> / รหัสผ่าน: <strong>1234</strong><br>
-                        • ผู้ดูแลระบบ: <strong>admin</strong> / รหัสผ่าน: <strong>admin123</strong>
+                    <div
+                        style="background: rgba(6, 182, 212, 0.08); border: 1px solid rgba(6, 182, 212, 0.2); border-radius: var(--border-radius-sm); padding: 0.75rem; font-size: 0.75rem; margin-bottom: 1.5rem; color: var(--text-secondary);">
+                        <span
+                            style="font-weight: 700; color: var(--accent-cyan); display:block; margin-bottom:0.25rem;"><i
+                                class="fa-solid fa-circle-info"></i> บัญชีทดสอบสำหรับตรวจการบ้าน:</span>
+                        • นักเรียน: <strong>student1</strong> / รหัสผ่าน: <strong>student1</strong><br>
+                        • ผู้ดูแลระบบ: <strong>admin1</strong> / รหัสผ่าน: <strong>admin1</strong>
                     </div>
                     <button type="submit" class="btn btn-primary auth-btn">
                         <i class="fa-solid fa-arrow-right-to-bracket"></i> เข้าเรียนทันที
@@ -139,11 +153,13 @@
                 <form id="registerForm" class="auth-form" onsubmit="handleRegisterSubmit(event)">
                     <div class="form-group">
                         <label class="form-label">ชื่อผู้ใช้ (Username)</label>
-                        <input type="text" id="regUsername" class="form-input" placeholder="ตั้งชื่อผู้ใช้งานเป็นภาษาอังกฤษ" required>
+                        <input type="text" id="regUsername" class="form-input"
+                            placeholder="ตั้งชื่อผู้ใช้งานเป็นภาษาอังกฤษ" required>
                     </div>
                     <div class="form-group">
                         <label class="form-label">ชื่อ-นามสกุล (Full Name)</label>
-                        <input type="text" id="regFullname" class="form-input" placeholder="กรอกชื่อจริงและนามสกุลของคุณ" required>
+                        <input type="text" id="regFullname" class="form-input"
+                            placeholder="กรอกชื่อจริงและนามสกุลของคุณ" required>
                     </div>
                     <!-- ✅ เพิ่ม field Email -->
                     <div class="form-group">
@@ -152,7 +168,8 @@
                     </div>
                     <div class="form-group">
                         <label class="form-label">รหัสผ่าน (Password)</label>
-                        <input type="password" id="regPassword" class="form-input" placeholder="ตั้งรหัสผ่านสำหรับใช้งาน" required>
+                        <input type="password" id="regPassword" class="form-input"
+                            placeholder="ตั้งรหัสผ่านสำหรับใช้งาน" required>
                     </div>
                     <button type="submit" class="btn btn-accent auth-btn">
                         <i class="fa-solid fa-user-plus"></i> สมัครสมาชิกเสร็จสิ้น
@@ -190,7 +207,7 @@
             e.preventDefault();
             const usernameInput = document.getElementById('loginUsername').value.trim();
             const passwordInput = document.getElementById('loginPassword').value;
-            
+
             try {
                 // Try API first (if backend is available)
                 try {
@@ -212,7 +229,7 @@
                 } catch (apiErr) {
                     console.log('API not available, using localStorage login...');
                 }
-                
+
                 // Fallback to localStorage-based login
                 const loginResult = window.WebtechState.login(usernameInput, passwordInput);
                 if (loginResult.success) {
@@ -235,7 +252,7 @@
             const fullnameInput = document.getElementById('regFullname').value.trim();
             const emailInput = document.getElementById('regEmail').value.trim();
             const passwordInput = document.getElementById('regPassword').value;
-            
+
             try {
                 // Try API first (if backend is available)
                 try {
@@ -257,7 +274,7 @@
                 } catch (apiErr) {
                     console.log('API not available, using localStorage registration...');
                 }
-                
+
                 // Fallback to localStorage-based register
                 const registerResult = window.WebtechState.register(usernameInput, fullnameInput, passwordInput, currentRegRole);
                 if (registerResult.success) {
@@ -275,4 +292,5 @@
         }
     </script>
 </body>
+
 </html>

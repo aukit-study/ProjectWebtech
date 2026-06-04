@@ -31,9 +31,9 @@ async function refreshAdminDashboard() {
 
     // 2. Render Registry Table Row Data
     renderAdminCoursesTable(courses);
-    
+
     // 🌟 3. [เพิ่มใหม่] สั่งรันฟังก์ชันดึงข้อมูลนักเรียนจาก Backend SQLite
-    fetchAndRenderUsers(); 
+    fetchAndRenderUsers();
 }
 
 async function fetchAdminCourses() {
@@ -74,7 +74,6 @@ function renderAdminCoursesTable(courses) {
                 <td><strong style="color:white;">${course.title}</strong></td>
                 <td><span class="role-tag-mini" style="font-size:0.7rem;">${course.category}</span></td>
                 <td><span class="role-tag-mini admin" style="font-size:0.7rem; background:rgba(139,92,246,0.1); color:var(--accent-purple); border:1px solid rgba(139,92,246,0.2);">${course.difficulty}</span></td>
-                <td><i class="fa-regular fa-clock" style="color:var(--text-muted); margin-right:0.25rem;"></i> ${course.duration}</td>
                 <td>${displayPrice}</td>
                 <td><i class="fa-solid fa-users" style="color:var(--text-muted); margin-right:0.25rem;"></i> ${course.current_bookings}/${course.max_capacity}</td>
                 <td>
@@ -147,7 +146,6 @@ async function openEditCourseModal(courseId) {
         document.getElementById('crudCourseTitle').value = course.title;
         document.getElementById('crudCourseCategory').value = course.category;
         document.getElementById('crudCourseDifficulty').value = course.difficulty;
-        document.getElementById('crudCourseDuration').value = course.duration;
         document.getElementById('crudCoursePrice').value = course.price !== undefined ? course.price : 0;
         document.getElementById('crudCourseDescription').value = course.description;
         document.getElementById('crudCourseLessons').value = '';
@@ -175,7 +173,6 @@ async function handleCrudFormSubmit(e) {
         title: document.getElementById('crudCourseTitle').value.trim(),
         category: document.getElementById('crudCourseCategory').value,
         difficulty: document.getElementById('crudCourseDifficulty').value,
-        duration: document.getElementById('crudCourseDuration').value.trim(),
         price: Number(document.getElementById('crudCoursePrice').value),
         description: document.getElementById('crudCourseDescription').value.trim(),
     };
@@ -252,10 +249,10 @@ async function fetchAndRenderUsers() {
     try {
         const response = await fetch('/api/admin/users');
         const result = await response.json();
-        
+
         if (result.success) {
             renderAdminUsersTable(result.data);
-            
+
             // อัปเดตตัวเลขสถิติรวมของนักเรียน
             const studentCount = result.data.filter(u => u.role === 'student').length;
             document.getElementById('statAdminTotalUsers').innerText = studentCount;
@@ -280,7 +277,7 @@ function renderAdminUsersTable(users) {
         const roleTagClass = isStudent ? '' : 'admin';
         const roleBg = isStudent ? 'rgba(6,182,212,0.1)' : 'rgba(239,68,68,0.1)';
         const roleColor = isStudent ? 'var(--accent-cyan)' : '#EF4444';
-        
+
         return `
             <tr>
                 <td><code style="color:var(--text-secondary);">${user.username}</code></td>
@@ -307,7 +304,7 @@ function renderAdminUsersTable(users) {
 async function openUserHistoryModal(userId, fullname) {
     const modal = document.getElementById('userHistoryModal');
     const tbody = document.getElementById('userHistoryTableBody');
-    
+
     document.getElementById('historyModalUserName').innerText = fullname;
     tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">กำลังโหลดข้อมูล...</td></tr>`;
     modal.classList.add('active');
@@ -315,7 +312,7 @@ async function openUserHistoryModal(userId, fullname) {
     try {
         const response = await fetch(`/api/admin/users/${userId}/history`);
         const result = await response.json();
-        
+
         if (result.success && result.data.length > 0) {
             tbody.innerHTML = result.data.map(item => `
                 <tr>

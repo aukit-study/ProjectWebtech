@@ -6,7 +6,7 @@ const bcrypt = require('bcrypt');
 async function initDatabase() {
     // กำหนด Path ให้ไฟล์ database.sqlite อยู่ที่ root ของโฟลเดอร์ backend
     const dbPath = path.resolve(__dirname, '../../database.sqlite');
-    
+
     try {
         // เปิด/สร้าง SQLite database
         const db = await open({
@@ -32,7 +32,6 @@ async function initDatabase() {
                 title TEXT NOT NULL,
                 category TEXT NOT NULL,
                 difficulty TEXT DEFAULT 'Beginner',
-                duration TEXT,
                 description TEXT,
                 cover_image TEXT,
                 price REAL DEFAULT 0,
@@ -122,7 +121,7 @@ async function initDatabase() {
             { username: 'student25', email: 'student25@turnpro.com', fullname: 'อรทัย ใจดี (Student 25)', password: 'student25', role: 'student' },
             { username: 'student26', email: 'student26@turnpro.com', fullname: 'รุ่งโรจน์ โชติช่วง (Student 26)', password: 'student26', role: 'student' },
             { username: 'student27', email: 'student27@turnpro.com', fullname: 'มยุรี สุขสม (Student 27)', password: 'student27', role: 'student' },
-            
+
             // 🛡️ กลุ่มผู้ดูแลระบบ (Admin)
             { username: 'admin1', email: 'admin1@turnpro.com', fullname: 'นายระบบ ผู้ดูแล 1 (Admin)', password: 'admin1', role: 'admin' },
             { username: 'admin2', email: 'admin2@turnpro.com', fullname: 'นางสาวแอดมิน ผู้จัดการ 2 (Admin)', password: 'admin2', role: 'admin' },
@@ -142,7 +141,7 @@ async function initDatabase() {
                 addedUsers++;
             }
         }
-        if(addedUsers > 0) {
+        if (addedUsers > 0) {
             console.log(`🌱 Seeded ${addedUsers} new mock users successfully.`);
         }
 
@@ -154,34 +153,34 @@ async function initDatabase() {
             const adminId = adminUser ? adminUser.id : 1;
 
             const mockCourses = [
-                { title: 'HTML5 & CSS3 Responsive Live Workshop', category: 'HTML/CSS', difficulty: 'Beginner', duration: '4 Hours', description: 'เรียนรู้การจัดหน้าโครงสร้างเว็บอย่างถูกต้องด้วย HTML5 และสร้างสรรค์ลูกเล่นแอนิเมชันสไตล์กระจกโปร่งแสง (Glassmorphism)', cover_image: 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)', price: 350, max_capacity: 3 },
-                { title: 'JavaScript Core & State Management', category: 'JavaScript', difficulty: 'Intermediate', duration: '6 Hours', description: 'เจาะลึกกลไกหลักของภาษา JavaScript ฟังก์ชันสมัยใหม่ ES6+, การเปลี่ยนแปลง DOM แบบไดนามิก และการทำ LocalStorage State', cover_image: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', price: 550, max_capacity: 5 },
-                { title: 'CSS Animation Immersive Studio', category: 'HTML/CSS', difficulty: 'Intermediate', duration: '5 Hours', description: 'สร้างแอนิเมชันสวยงามด้วย CSS keyframes, transitions และ hover effects ที่ตอบโจทย์ UX สมัยใหม่', cover_image: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)', price: 420, max_capacity: 8 },
-                { title: 'Modern React Hooks & Warp State', category: 'JavaScript', difficulty: 'Intermediate', duration: '8 Hours', description: 'เรียนรู้ React Hooks, Context API และ Patterns สำหรับจัดการ state ขนาดใหญ่ในงานจริง', cover_image: 'linear-gradient(135deg, #9333EA 0%, #7C3AED 100%)', price: 880, max_capacity: 10 },
-                { title: 'Node.js API Design with Express', category: 'Backend', difficulty: 'Intermediate', duration: '7 Hours', description: 'สอนสร้าง API RESTful ด้วย Express, Middleware, validation และการเชื่อมต่อฐานข้อมูลอย่างปลอดภัย', cover_image: 'linear-gradient(135deg, #047857 0%, #064E3B 100%)', price: 720, max_capacity: 12 },
-                { title: 'RESTful API & JWT Auth', category: 'Backend', difficulty: 'Advanced', duration: '9 Hours', description: 'ระบบยืนยันตัวตน API ด้วย JWT, refresh token และ role-based access control สำหรับแอปจริง', cover_image: 'linear-gradient(135deg, #DC2626 0%, #991B1B 100%)', price: 1100, max_capacity: 10 },
-                { title: 'SQL Query Mastery for Developers', category: 'Database', difficulty: 'Beginner', duration: '5 Hours', description: 'เข้าใจ SQL SELECT, JOIN, GROUP BY, aggregate functions และการออกแบบ schema ที่อ่านง่าย', cover_image: 'linear-gradient(135deg, #0EA5E9 0%, #0369A1 100%)', price: 480, max_capacity: 15 },
-                { title: 'MongoDB NoSQL Design Patterns', category: 'Database', difficulty: 'Intermediate', duration: '6 Hours', description: 'เรียนการออกแบบข้อมูล NoSQL, indexing, aggregation pipeline และวิธีเลือกใช้ MongoDB ในโปรเจกต์จริง', cover_image: 'linear-gradient(135deg, #14B8A6 0%, #0F766E 100%)', price: 620, max_capacity: 14 },
-                { title: 'Fullstack Vue + Firebase Crash Course', category: 'JavaScript', difficulty: 'Beginner', duration: '5 Hours', description: 'สร้างเว็บแอปเต็มรูปแบบด้วย Vue.js และ Firebase Authentication, Firestore พร้อม deploy จริง', cover_image: 'linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%)', price: 490, max_capacity: 12 },
-                { title: 'TypeScript Safety & Architecture', category: 'JavaScript', difficulty: 'Advanced', duration: '6 Hours', description: 'เรียน TypeScript ตั้งแต่ type system, generics จนถึง architectural patterns สำหรับทีมใหญ่', cover_image: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)', price: 950, max_capacity: 8 },
-                { title: 'Python Scripting for Web Automation', category: 'Backend', difficulty: 'Beginner', duration: '4 Hours', description: 'ลงมือเขียน Python script สำหรับ web scraping, automation และ data processing เบื้องต้น', cover_image: 'linear-gradient(135deg, #0F172A 0%, #334155 100%)', price: 390, max_capacity: 10 },
-                { title: 'Docker Containerization Essentials', category: 'DevOps', difficulty: 'Intermediate', duration: '4 Hours', description: 'เข้าใจ Docker containers, Dockerfile, และการ deploy application แบบแยก service อย่างมืออาชีพ', cover_image: 'linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%)', price: 530, max_capacity: 10 },
-                { title: 'Git & GitHub Collaboration Workshop', category: 'DevOps', difficulty: 'Beginner', duration: '3 Hours', description: 'เรียน Git workflow, branch strategy, pull request และการทำงานร่วมกันผ่าน GitHub อย่างมืออาชีพ', cover_image: 'linear-gradient(135deg, #F97316 0%, #C2410C 100%)', price: 250, max_capacity: 20 },
-                { title: 'AWS Cloud Basics for Developers', category: 'DevOps', difficulty: 'Intermediate', duration: '7 Hours', description: 'เริ่มต้น AWS services ที่นักพัฒนาควรรู้: Lambda, S3, API Gateway, IAM และการ deploy แบบเบื้องต้น', cover_image: 'linear-gradient(135deg, #0EA5E9 0%, #0F766E 100%)', price: 1050, max_capacity: 12 },
-                { title: 'Progressive Web App (PWA) Build Lab', category: 'JavaScript', difficulty: 'Advanced', duration: '8 Hours', description: 'สร้าง PWA ที่โหลดเร็ว ติดตั้งได้ และรองรับ offline ด้วย service worker และ manifest file', cover_image: 'linear-gradient(135deg, #0F766E 0%, #064E3B 100%)', price: 1250, max_capacity: 7 },
-                { title: 'Accessibility & UX for Modern Web', category: 'HTML/CSS', difficulty: 'Beginner', duration: '4 Hours', description: 'เรียนสร้างเว็บที่เข้าถึงได้ง่ายสำหรับทุกคน ด้วยหลักการ UX และมาตรฐาน accessibility ของ W3C', cover_image: 'linear-gradient(135deg, #14B8A6 0%, #0D9488 100%)', price: 310, max_capacity: 10 },
-                { title: 'PostgreSQL Performance Tuning', category: 'Database', difficulty: 'Advanced', duration: '6 Hours', description: 'ปรับ query ให้เร็วขึ้น, ใช้ indexes อย่างถูกต้อง และออกแบบตารางให้รองรับงาน Production', cover_image: 'linear-gradient(135deg, #15803D 0%, #166534 100%)', price: 870, max_capacity: 9 },
-                { title: 'Testing with Jest and Cypress', category: 'JavaScript', difficulty: 'Intermediate', duration: '5 Hours', description: 'ทดสอบฟรอนต์เอนด์และ API ด้วย Jest unit tests, React testing library และ end-to-end tests ด้วย Cypress', cover_image: 'linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%)', price: 650, max_capacity: 11 },
-                { title: 'Serverless Functions on Netlify', category: 'Backend', difficulty: 'Intermediate', duration: '5 Hours', description: ' deploy serverless functions บน Netlify, เชื่อมต่อกับ API และจัดการ workflow แบบไร้เซิร์ฟเวอร์', cover_image: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', price: 760, max_capacity: 10 },
-                { title: 'Cybersecurity Essentials for Web Apps', category: 'Backend', difficulty: 'Advanced', duration: '6 Hours', description: 'เรียนรู้การป้องกัน XSS, CSRF, SQL injection และปรับแอปให้ปลอดภัยสำหรับผู้ใช้งานจริง', cover_image: 'linear-gradient(135deg, #EF4444 0%, #B91C1C 100%)', price: 980, max_capacity: 8 }
+                { title: 'HTML5 & CSS3 Responsive Live Workshop', category: 'HTML/CSS', difficulty: 'Beginner', description: 'เรียนรู้การจัดหน้าโครงสร้างเว็บอย่างถูกต้องด้วย HTML5 และสร้างสรรค์ลูกเล่นแอนิเมชันสไตล์กระจกโปร่งแสง (Glassmorphism)', cover_image: 'linear-gradient(135deg, #06B6D4 0%, #0891B2 100%)', price: 350, max_capacity: 3 },
+                { title: 'JavaScript Core & State Management', category: 'JavaScript', difficulty: 'Intermediate', description: 'เจาะลึกกลไกหลักของภาษา JavaScript ฟังก์ชันสมัยใหม่ ES6+, การเปลี่ยนแปลง DOM แบบไดนามิก และการทำ LocalStorage State', cover_image: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', price: 550, max_capacity: 5 },
+                { title: 'CSS Animation Immersive Studio', category: 'HTML/CSS', difficulty: 'Intermediate', description: 'สร้างแอนิเมชันสวยงามด้วย CSS keyframes, transitions และ hover effects ที่ตอบโจทย์ UX สมัยใหม่', cover_image: 'linear-gradient(135deg, #F59E0B 0%, #D97706 100%)', price: 420, max_capacity: 8 },
+                { title: 'Modern React Hooks & Warp State', category: 'JavaScript', difficulty: 'Intermediate', description: 'เรียนรู้ React Hooks, Context API และ Patterns สำหรับจัดการ state ขนาดใหญ่ในงานจริง', cover_image: 'linear-gradient(135deg, #9333EA 0%, #7C3AED 100%)', price: 880, max_capacity: 10 },
+                { title: 'Node.js API Design with Express', category: 'Backend', difficulty: 'Intermediate', description: 'สอนสร้าง API RESTful ด้วย Express, Middleware, validation และการเชื่อมต่อฐานข้อมูลอย่างปลอดภัย', cover_image: 'linear-gradient(135deg, #047857 0%, #064E3B 100%)', price: 720, max_capacity: 12 },
+                { title: 'RESTful API & JWT Auth', category: 'Backend', difficulty: 'Advanced', description: 'ระบบยืนยันตัวตน API ด้วย JWT, refresh token และ role-based access control สำหรับแอปจริง', cover_image: 'linear-gradient(135deg, #DC2626 0%, #991B1B 100%)', price: 1100, max_capacity: 10 },
+                { title: 'SQL Query Mastery for Developers', category: 'Database', difficulty: 'Beginner', description: 'เข้าใจ SQL SELECT, JOIN, GROUP BY, aggregate functions และการออกแบบ schema ที่อ่านง่าย', cover_image: 'linear-gradient(135deg, #0EA5E9 0%, #0369A1 100%)', price: 480, max_capacity: 15 },
+                { title: 'MongoDB NoSQL Design Patterns', category: 'Database', difficulty: 'Intermediate', description: 'เรียนการออกแบบข้อมูล NoSQL, indexing, aggregation pipeline และวิธีเลือกใช้ MongoDB ในโปรเจกต์จริง', cover_image: 'linear-gradient(135deg, #14B8A6 0%, #0F766E 100%)', price: 620, max_capacity: 14 },
+                { title: 'Fullstack Vue + Firebase Crash Course', category: 'JavaScript', difficulty: 'Beginner', description: 'สร้างเว็บแอปเต็มรูปแบบด้วย Vue.js และ Firebase Authentication, Firestore พร้อม deploy จริง', cover_image: 'linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%)', price: 490, max_capacity: 12 },
+                { title: 'TypeScript Safety & Architecture', category: 'JavaScript', difficulty: 'Advanced', description: 'เรียน TypeScript ตั้งแต่ type system, generics จนถึง architectural patterns สำหรับทีมใหญ่', cover_image: 'linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%)', price: 950, max_capacity: 8 },
+                { title: 'Python Scripting for Web Automation', category: 'Backend', difficulty: 'Beginner', description: 'ลงมือเขียน Python script สำหรับ web scraping, automation และ data processing เบื้องต้น', cover_image: 'linear-gradient(135deg, #0F172A 0%, #334155 100%)', price: 390, max_capacity: 10 },
+                { title: 'Docker Containerization Essentials', category: 'DevOps', difficulty: 'Intermediate', description: 'เข้าใจ Docker containers, Dockerfile, และการ deploy application แบบแยก service อย่างมืออาชีพ', cover_image: 'linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%)', price: 530, max_capacity: 10 },
+                { title: 'Git & GitHub Collaboration Workshop', category: 'DevOps', difficulty: 'Beginner', description: 'เรียน Git workflow, branch strategy, pull request และการทำงานร่วมกันผ่าน GitHub อย่างมืออาชีพ', cover_image: 'linear-gradient(135deg, #F97316 0%, #C2410C 100%)', price: 250, max_capacity: 20 },
+                { title: 'AWS Cloud Basics for Developers', category: 'DevOps', difficulty: 'Intermediate', description: 'เริ่มต้น AWS services ที่นักพัฒนาควรรู้: Lambda, S3, API Gateway, IAM และการ deploy แบบเบื้องต้น', cover_image: 'linear-gradient(135deg, #0EA5E9 0%, #0F766E 100%)', price: 1050, max_capacity: 12 },
+                { title: 'Progressive Web App (PWA) Build Lab', category: 'JavaScript', difficulty: 'Advanced', description: 'สร้าง PWA ที่โหลดเร็ว ติดตั้งได้ และรองรับ offline ด้วย service worker และ manifest file', cover_image: 'linear-gradient(135deg, #0F766E 0%, #064E3B 100%)', price: 1250, max_capacity: 7 },
+                { title: 'Accessibility & UX for Modern Web', category: 'HTML/CSS', difficulty: 'Beginner', description: 'เรียนสร้างเว็บที่เข้าถึงได้ง่ายสำหรับทุกคน ด้วยหลักการ UX และมาตรฐาน accessibility ของ W3C', cover_image: 'linear-gradient(135deg, #14B8A6 0%, #0D9488 100%)', price: 310, max_capacity: 10 },
+                { title: 'PostgreSQL Performance Tuning', category: 'Database', difficulty: 'Advanced', description: 'ปรับ query ให้เร็วขึ้น, ใช้ indexes อย่างถูกต้อง และออกแบบตารางให้รองรับงาน Production', cover_image: 'linear-gradient(135deg, #15803D 0%, #166534 100%)', price: 870, max_capacity: 9 },
+                { title: 'Testing with Jest and Cypress', category: 'JavaScript', difficulty: 'Intermediate', description: 'ทดสอบฟรอนต์เอนด์และ API ด้วย Jest unit tests, React testing library และ end-to-end tests ด้วย Cypress', cover_image: 'linear-gradient(135deg, #0EA5E9 0%, #2563EB 100%)', price: 650, max_capacity: 11 },
+                { title: 'Serverless Functions on Netlify', category: 'Backend', difficulty: 'Intermediate', description: ' deploy serverless functions บน Netlify, เชื่อมต่อกับ API และจัดการ workflow แบบไร้เซิร์ฟเวอร์', cover_image: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)', price: 760, max_capacity: 10 },
+                { title: 'Cybersecurity Essentials for Web Apps', category: 'Backend', difficulty: 'Advanced', description: 'เรียนรู้การป้องกัน XSS, CSRF, SQL injection และปรับแอปให้ปลอดภัยสำหรับผู้ใช้งานจริง', cover_image: 'linear-gradient(135deg, #EF4444 0%, #B91C1C 100%)', price: 980, max_capacity: 8 }
             ];
 
             for (const course of mockCourses) {
                 await db.run(
-                    `INSERT INTO courses (title, category, difficulty, duration, description, cover_image, price, max_capacity, created_by)
+                    `INSERT INTO courses (title, category, difficulty, description, cover_image, price, max_capacity, created_by)
                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
                     [
-                        course.title, course.category, course.difficulty, course.duration, course.description,
+                        course.title, course.category, course.difficulty, course.description,
                         course.cover_image, course.price, course.max_capacity, adminId
                     ]
                 );

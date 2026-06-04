@@ -8,7 +8,7 @@ class CourseController {
 
         try {
             const courses = await CourseService.getAllCourses(db, userId);
-            
+
             return res.status(200).json({
                 success: true,
                 message: 'Courses retrieved successfully.',
@@ -26,7 +26,7 @@ class CourseController {
 
         try {
             const course = await CourseService.getCourseById(db, id);
-            
+
             if (!course) {
                 return res.status(404).json({
                     success: false,
@@ -47,10 +47,10 @@ class CourseController {
     // POST /api/courses - สร้างคอร์สใหม่ (admin only)
     static async createCourse(req, res, next) {
         const db = req.app.locals.db;
-        const { title, category, difficulty, duration, description, cover_image, max_capacity, price } = req.body;
+        const { title, category, difficulty, description, cover_image, max_capacity, price } = req.body;
 
         // Validation
-        if (!title || !category || !difficulty || !duration) {
+        if (!title || !category || !difficulty) {
             return res.status(400).json({
                 success: false,
                 message: 'Please fill in all required fields.'
@@ -67,8 +67,8 @@ class CourseController {
 
         try {
             const courseId = await CourseService.createCourse(
-                db, 
-                { title, category, difficulty, duration, description, cover_image, max_capacity, price: numericPrice }, 
+                db,
+                { title, category, difficulty, description, cover_image, max_capacity, price: numericPrice },
                 req.user.id
             );
 
@@ -86,7 +86,7 @@ class CourseController {
     static async updateCourse(req, res, next) {
         const db = req.app.locals.db;
         const { id } = req.params;
-        const { title, category, difficulty, duration, description, cover_image, max_capacity, price } = req.body;
+        const { title, category, difficulty, description, cover_image, max_capacity, price } = req.body;
 
         const numericPrice = price !== undefined ? Number(price) : undefined;
         if (numericPrice !== undefined && (Number.isNaN(numericPrice) || numericPrice < 0)) {
@@ -98,9 +98,9 @@ class CourseController {
 
         try {
             await CourseService.updateCourse(
-                db, 
-                id, 
-                { title, category, difficulty, duration, description, cover_image, max_capacity, price: numericPrice }
+                db,
+                id,
+                { title, category, difficulty, description, cover_image, max_capacity, price: numericPrice }
             );
 
             return res.status(200).json({
@@ -161,73 +161,73 @@ class CourseController {
 
     // POST /api/courses/checkout - Gatekeeper Pattern: คำนวณราคาฝั่ง Server
     static async checkoutCart(req, res, next) {
-    const db     = req.app.locals.db;
-    const userId = req.user.id;
-    const { courseIds } = req.body;
+        const db = req.app.locals.db;
+        const userId = req.user.id;
+        const { courseIds } = req.body;
 
-    if (!Array.isArray(courseIds) || courseIds.length === 0) {
-        return res.status(400).json({
-            success: false,
-            message: 'ตะกร้าว่างเปล่า หรือรูปแบบข้อมูลไม่ถูกต้อง'
-        });
-    }
-
-    try {
-        // ── Step 1: ให้ DiscountService คำนวณราคาจริงจาก DB ──
-        const DiscountService = require('../services/discountService');
-        const breakdown = await DiscountService.calculateCheckout(db, courseIds);
-
-        // ── Step 2: Enroll แต่ละคอร์ส ──
-        const results = [];
-        let successCount = 0;
-
-        for (const id of courseIds) {
-            try {
-                await CourseService.enrollInCourse(db, id, userId);
-                results.push({ id, status: 'success' });
-                successCount++;
-            } catch (error) {
-                results.push({ id, status: 'failed', reason: error.message });
-            }
+        if (!Array.isArray(courseIds) || courseIds.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'ตะกร้าว่างเปล่า หรือรูปแบบข้อมูลไม่ถูกต้อง'
+            });
         }
 
-        if (successCount === 0) {
-    return res.status(409).json({
-        success: false,
-        message: 'ไม่สามารถสั่งซื้อคอร์สได้เลย อาจจะเต็มหรือสมัครไปแล้วทั้งหมด',
-        results,
-        pricing: {
-            originalTotal:     breakdown.originalTotal,
-            discountPercent:   breakdown.discountPercent,
-            discountReason:    breakdown.discountReason,
-            discountAmount:    breakdown.discountAmount,
-            recalculatedTotal: breakdown.recalculatedTotal,
-            calculatedAt:      breakdown.calculatedAt,
-            calculatedBy:      breakdown.calculatedBy
-        }
-    });
-}
+        try {
+            // ── Step 1: ให้ DiscountService คำนวณราคาจริงจาก DB ──
+            const DiscountService = require('../services/discountService');
+            const breakdown = await DiscountService.calculateCheckout(db, courseIds);
 
-        // ── Step 3: Return recalculated total พร้อม proof ──
-        return res.status(200).json({
-            success: true,
-            message: `สั่งซื้อสำเร็จ ${successCount} คอร์ส`,
-            enrollmentResults: results,
-            // 👇 หลักฐานว่าคำนวณฝั่ง Backend (Gatekeeper Pattern)
-            pricing: {
-                originalTotal:      breakdown.originalTotal,
-                discountPercent:    breakdown.discountPercent,
-                discountReason:     breakdown.discountReason,
-                discountAmount:     breakdown.discountAmount,
-                recalculatedTotal:  breakdown.recalculatedTotal,
-                calculatedAt:       breakdown.calculatedAt,
-                calculatedBy:       breakdown.calculatedBy
+            // ── Step 2: Enroll แต่ละคอร์ส ──
+            const results = [];
+            let successCount = 0;
+
+            for (const id of courseIds) {
+                try {
+                    await CourseService.enrollInCourse(db, id, userId);
+                    results.push({ id, status: 'success' });
+                    successCount++;
+                } catch (error) {
+                    results.push({ id, status: 'failed', reason: error.message });
+                }
             }
-        });
 
-    } catch (error) {
-        next(error);
-    }
+            if (successCount === 0) {
+                return res.status(409).json({
+                    success: false,
+                    message: 'ไม่สามารถสั่งซื้อคอร์สได้เลย อาจจะเต็มหรือสมัครไปแล้วทั้งหมด',
+                    results,
+                    pricing: {
+                        originalTotal: breakdown.originalTotal,
+                        discountPercent: breakdown.discountPercent,
+                        discountReason: breakdown.discountReason,
+                        discountAmount: breakdown.discountAmount,
+                        recalculatedTotal: breakdown.recalculatedTotal,
+                        calculatedAt: breakdown.calculatedAt,
+                        calculatedBy: breakdown.calculatedBy
+                    }
+                });
+            }
+
+            // ── Step 3: Return recalculated total พร้อม proof ──
+            return res.status(200).json({
+                success: true,
+                message: `สั่งซื้อสำเร็จ ${successCount} คอร์ส`,
+                enrollmentResults: results,
+                // 👇 หลักฐานว่าคำนวณฝั่ง Backend (Gatekeeper Pattern)
+                pricing: {
+                    originalTotal: breakdown.originalTotal,
+                    discountPercent: breakdown.discountPercent,
+                    discountReason: breakdown.discountReason,
+                    discountAmount: breakdown.discountAmount,
+                    recalculatedTotal: breakdown.recalculatedTotal,
+                    calculatedAt: breakdown.calculatedAt,
+                    calculatedBy: breakdown.calculatedBy
+                }
+            });
+
+        } catch (error) {
+            next(error);
+        }
     }
 
     // POST /api/courses/:id/progress - อัปเดตความคืบหน้าการเรียน

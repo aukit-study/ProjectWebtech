@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="th">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -23,7 +24,7 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
         }
 
         .admin-stat-info h4 {
@@ -44,24 +45,24 @@
         .admin-stat-icon {
             font-size: 2rem;
             color: var(--accent-purple);
-            background: rgba(139,92,246,0.1);
+            background: rgba(139, 92, 246, 0.1);
             width: 60px;
             height: 60px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 15px rgba(139,92,246,0.1) inset;
+            box-shadow: 0 0 15px rgba(139, 92, 246, 0.1) inset;
         }
 
         .admin-stat-icon.cyan {
             color: var(--accent-cyan);
-            background: rgba(6,182,212,0.1);
+            background: rgba(6, 182, 212, 0.1);
         }
 
         .admin-stat-icon.green {
             color: var(--accent-green);
-            background: rgba(16,185,129,0.1);
+            background: rgba(16, 185, 129, 0.1);
         }
 
         /* CRUD Table Styling */
@@ -70,7 +71,7 @@
             border: 1px solid var(--border-color);
             border-radius: var(--border-radius-lg);
             padding: 2rem;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
             overflow: hidden;
         }
 
@@ -135,6 +136,7 @@
         }
     </style>
 </head>
+
 <body>
 
     <!-- Header Navigation -->
@@ -164,11 +166,15 @@
     <main>
         <!-- SECURE VIEW: Will toggle display between Restricted Alert and Admin Dashboard depending on LocalStorage login role -->
         <div id="restrictedAccessPanel" class="access-restricted-card" style="display:none;">
-            <i class="fa-solid fa-triangle-exclamation" style="font-size: 4rem; color: #EF4444; margin-bottom: 1.5rem; filter: drop-shadow(0 0 15px rgba(239,68,68,0.3));"></i>
+            <i class="fa-solid fa-triangle-exclamation"
+                style="font-size: 4rem; color: #EF4444; margin-bottom: 1.5rem; filter: drop-shadow(0 0 15px rgba(239,68,68,0.3));"></i>
             <h2 style="font-size: 2rem; margin-bottom: 1rem;">สิทธิ์การเข้าใช้งานถูกจำกัด!</h2>
-            <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 2rem auto;">หน้านี้จัดทำไว้สำหรับผู้ดูแลระบบ (Admin) เท่านั้น นักเรียนทั่วไปไม่สามารถเข้าถึงฟังก์ชันเพิ่ม/ลบคอร์สเรียนได้</p>
+            <p style="color: var(--text-secondary); max-width: 500px; margin: 0 auto 2rem auto;">
+                หน้านี้จัดทำไว้สำหรับผู้ดูแลระบบ (Admin) เท่านั้น
+                นักเรียนทั่วไปไม่สามารถเข้าถึงฟังก์ชันเพิ่ม/ลบคอร์สเรียนได้</p>
             <div style="display:flex; justify-content:center; gap:1rem;">
-                <a href="login.html" class="btn btn-primary"><i class="fa-solid fa-sign-in-alt"></i> สลับบัญชีเป็นแอดมิน</a>
+                <a href="login.html" class="btn btn-primary"><i class="fa-solid fa-sign-in-alt"></i>
+                    สลับบัญชีเป็นแอดมิน</a>
                 <a href="index.html" class="btn btn-secondary">กลับหน้าหลัก</a>
             </div>
         </div>
@@ -178,9 +184,10 @@
             <div class="section-title-wrapper">
                 <div>
                     <h2 class="section-title">แผงควบคุมระบบจัดการ (Admin CRUD)</h2>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">จัดการคอร์สเรียน เพิ่มบทเรียนจำลอง และอัปเดตแค็ตตาล็อกออนไลน์แบบ Real-time</p>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">จัดการคอร์สเรียน เพิ่มบทเรียนจำลอง
+                        และอัปเดตแค็ตตาล็อกออนไลน์แบบ Real-time</p>
                 </div>
-                
+
                 <div style="display: flex; gap: 1rem;">
                     <a href="system.html" class="btn btn-primary" style="text-decoration: none;">
                         <i class="fa-solid fa-users-gear"></i> ดูฐานข้อมูลสมาชิก
@@ -218,8 +225,10 @@
 
             <!-- Course CRUD Table Card -->
             <div class="admin-table-card">
-                <h3 style="font-family:var(--font-heading); font-size:1.25rem;"><i class="fa-solid fa-table-list" style="color:var(--accent-cyan); margin-right:0.5rem;"></i> ทะเบียนรายการวิชาเรียนบนแพลตฟอร์ม</h3>
-                
+                <h3 style="font-family:var(--font-heading); font-size:1.25rem;"><i class="fa-solid fa-table-list"
+                        style="color:var(--accent-cyan); margin-right:0.5rem;"></i> ทะเบียนรายการวิชาเรียนบนแพลตฟอร์ม
+                </h3>
+
                 <div class="table-responsive">
                     <table>
                         <thead>
@@ -228,7 +237,6 @@
                                 <th>ชื่อคอร์สเรียน</th>
                                 <th>หมวดหมู่</th>
                                 <th>ระดับความยาก</th>
-                                <th>ระยะเวลาเรียน</th>
                                 <th>ราคา</th>
                                 <th>จำนวนบทเรียน</th>
                                 <th>เครื่องมือจัดการ</th>
@@ -247,16 +255,18 @@
     <div class="modal-backdrop" id="courseCrudModal">
         <div class="modal-box">
             <div class="modal-header">
-                <h3 id="modalCrudTitle" style="font-family:var(--font-heading);"><i class="fa-solid fa-circle-plus" style="color:var(--accent-green); margin-right:0.5rem;"></i> เพิ่มข้อมูลคอร์สใหม่</h3>
+                <h3 id="modalCrudTitle" style="font-family:var(--font-heading);"><i class="fa-solid fa-circle-plus"
+                        style="color:var(--accent-green); margin-right:0.5rem;"></i> เพิ่มข้อมูลคอร์สใหม่</h3>
                 <button class="modal-close" onclick="closeCrudModal()">✕</button>
             </div>
             <form id="courseCrudForm" onsubmit="handleCrudFormSubmit(event)">
                 <!-- Hidden course ID for editing -->
                 <input type="hidden" id="crudCourseId">
-                
+
                 <div class="form-group">
                     <label class="form-label">ชื่อคอร์สเรียน</label>
-                    <input type="text" id="crudCourseTitle" class="form-input" placeholder="ตัวอย่าง: React Hook & State Architecture" required>
+                    <input type="text" id="crudCourseTitle" class="form-input"
+                        placeholder="ตัวอย่าง: React Hook & State Architecture" required>
                 </div>
 
                 <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
@@ -279,29 +289,30 @@
                     </div>
                 </div>
 
-                <div class="form-group">
-                    <label class="form-label">ระยะเวลาเรียน (ชั่วโมง)</label>
-                    <input type="text" id="crudCourseDuration" class="form-input" placeholder="ตัวอย่าง: 5 Hours" required>
-                </div>
 
                 <div class="form-group">
                     <label class="form-label">ราคา (THB)</label>
-                    <input type="number" id="crudCoursePrice" class="form-input" placeholder="ตัวอย่าง: 299" min="0" step="1" value="0" required>
+                    <input type="number" id="crudCoursePrice" class="form-input" placeholder="ตัวอย่าง: 299" min="0"
+                        step="1" value="0" required>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">คำอธิบายรายวิชาย่อย</label>
-                    <textarea id="crudCourseDescription" class="form-input" style="height: 80px; resize: none;" placeholder="กรอกข้อมูลสรุปย่อวิชาเพื่อให้แสดงผลการ์ดหน้าแรกสวยงาม..." required></textarea>
+                    <textarea id="crudCourseDescription" class="form-input" style="height: 80px; resize: none;"
+                        placeholder="กรอกข้อมูลสรุปย่อวิชาเพื่อให้แสดงผลการ์ดหน้าแรกสวยงาม..." required></textarea>
                 </div>
 
                 <div class="form-group">
                     <label class="form-label">รายชื่อบทเรียนการเรียนรู้ (ใส่ 1 บรรทัดต่อ 1 บทเรียน)</label>
-                    <textarea id="crudCourseLessons" class="form-input" style="height: 100px;" placeholder="บทนำเกี่ยวกับเทคโนโลยี&#10;การพัฒนาเชิงลึกและความเสถียร&#10;การทำ Workshop ขั้นสูง" required></textarea>
+                    <textarea id="crudCourseLessons" class="form-input" style="height: 100px;"
+                        placeholder="บทนำเกี่ยวกับเทคโนโลยี&#10;การพัฒนาเชิงลึกและความเสถียร&#10;การทำ Workshop ขั้นสูง"
+                        required></textarea>
                 </div>
 
                 <div style="display:flex; justify-content:flex-end; gap:0.75rem; margin-top:1.5rem;">
                     <button type="button" class="btn btn-secondary btn-sm" onclick="closeCrudModal()">ยกเลิก</button>
-                    <button type="submit" class="btn btn-success btn-sm" id="crudSubmitBtn"><i class="fa-solid fa-save"></i> บันทึกข้อมูล</button>
+                    <button type="submit" class="btn btn-success btn-sm" id="crudSubmitBtn"><i
+                            class="fa-solid fa-save"></i> บันทึกข้อมูล</button>
                 </div>
             </form>
         </div>
@@ -310,12 +321,12 @@
         <div class="modal-box" style="max-width: 650px;">
             <div class="modal-header">
                 <h3 style="font-family:var(--font-heading);">
-                    <i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-cyan); margin-right:0.5rem;"></i> 
+                    <i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-cyan); margin-right:0.5rem;"></i>
                     ประวัติการจองเวิร์กชอป
                 </h3>
                 <button class="modal-close" onclick="closeUserHistoryModal()">✕</button>
             </div>
-            
+
             <div style="margin-bottom: 1.5rem; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px;">
                 <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:0.25rem;">กำลังดูประวัติของ:</p>
                 <h4 id="historyModalUserName" style="font-size:1.2rem; color:var(--text-primary);">ชื่อ-นามสกุล</h4>
@@ -331,12 +342,13 @@
                         </tr>
                     </thead>
                     <tbody id="userHistoryTableBody">
-                        </tbody>
+                    </tbody>
                 </table>
             </div>
 
             <div style="display:flex; justify-content:flex-end; margin-top:1.5rem;">
-                <button type="button" class="btn btn-secondary btn-sm" onclick="closeUserHistoryModal()">ปิดหน้าต่าง</button>
+                <button type="button" class="btn btn-secondary btn-sm"
+                    onclick="closeUserHistoryModal()">ปิดหน้าต่าง</button>
             </div>
         </div>
     </div>
@@ -354,4 +366,5 @@
     <script src="js/main.js"></script>
     <script src="js/admin.js"></script>
 </body>
+
 </html>
