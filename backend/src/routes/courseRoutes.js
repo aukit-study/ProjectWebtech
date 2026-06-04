@@ -20,3 +20,6 @@ router.put('/:id', verifyToken, requireRole('admin'), CourseController.updateCou
 router.delete('/:id', verifyToken, requireRole('admin'), CourseController.deleteCourse);
 
 module.exports = router;
+
+// เส้นทางสำหรับยกเลิกคอร์สเรียน
+router.delete('/:id/unenroll', verifyToken, CourseController.unenrollCourse);

@@ -4,7 +4,7 @@
 async function getAllUsersWithStats(db) {
     const query = `
         SELECT 
-            u.id, u.username, u.fullname, u.role, u.created_at,
+            u.id, u.username, u.email, u.fullname, u.role, u.created_at,
             COUNT(e.course_id) as total_enrolled
         FROM users u
         LEFT JOIN enrollments e ON u.id = e.user_id

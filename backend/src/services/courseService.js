@@ -117,6 +117,27 @@ class CourseService {
 
         return true;
     }
+
+    // ยกเลิกการลงทะเบียนคอร์สเรียน (Student)
+    static async unenrollCourse(db, courseId, userId) {
+        // 1. ตรวจสอบว่าเคยลงทะเบียนไว้จริงๆ ไหม
+        const existingEnrollment = await db.get(
+            'SELECT id FROM enrollments WHERE user_id = ? AND course_id = ?',
+            [userId, courseId]
+        );
+        
+        if (!existingEnrollment) {
+            throw new Error('NOT_ENROLLED');
+        }
+
+        // 2. ลบข้อมูลการลงทะเบียนออกจากตาราง enrollments
+        await db.run(
+            'DELETE FROM enrollments WHERE id = ?',
+            [existingEnrollment.id]
+        );
+
+        return true;
+    }
 }
 
 module.exports = CourseService;

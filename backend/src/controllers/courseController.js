@@ -264,5 +264,28 @@ class CourseController {
             next(error);
         }
     }
+    // DELETE /api/courses/:id/unenroll - ยกเลิกคอร์สเรียน
+    static async unenrollCourse(req, res, next) {
+        const db = req.app.locals.db;
+        const { id } = req.params; // คือ courseId
+        const userId = req.user.id;
+
+        try {
+            await CourseService.unenrollCourse(db, id, userId);
+
+            return res.status(200).json({
+                success: true,
+                message: 'ยกเลิกการลงทะเบียนคอร์สเรียนสำเร็จ'
+            });
+        } catch (error) {
+            if (error.message === 'NOT_ENROLLED') {
+                return res.status(400).json({
+                    success: false,
+                    message: 'ไม่พบประวัติการลงทะเบียนคอร์สนี้'
+                });
+            }
+            next(error);
+        }
+    }
 }
 module.exports = CourseController;

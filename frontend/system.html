@@ -36,8 +36,13 @@
             border-bottom: 2px solid var(--border-color);
         }
 
-        th {
+        th, td {
             padding: 1rem 1.25rem;
+            vertical-align: middle;
+            white-space: nowrap; 
+        }
+
+        th {
             font-weight: 700;
             text-transform: uppercase;
             letter-spacing: 0.05em;
@@ -55,12 +60,9 @@
         }
 
         td {
-            padding: 1.25rem;
-            vertical-align: middle;
             color: var(--text-primary);
         }
 
-        /* Access Restriction Alert Panel */
         .access-restricted-card {
             text-align: center;
             padding: 4rem 2rem;
@@ -69,6 +71,27 @@
             border-radius: var(--border-radius-lg);
             margin: 2rem 0;
             backdrop-filter: blur(12px);
+        }
+
+        /* ตกแต่งข้อมูลใน Modal ให้อ่านง่าย */
+        .modal-user-info-grid {
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 0.75rem; 
+            font-size: 0.9rem; 
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            padding-top: 0.75rem;
+            border-top: 1px dashed rgba(255,255,255,0.1);
+        }
+        .modal-user-info-grid span {
+            color: white;
+            font-weight: 500;
+        }
+        .modal-user-info-grid i {
+            width: 16px;
+            color: var(--accent-cyan);
+            margin-right: 4px;
         }
     </style>
 </head>
@@ -83,10 +106,10 @@
                 <li><a href="index.html" class="nav-link">คลังคอร์ส</a></li>
                 <li><a href="classroom.html" class="nav-link">ห้องเรียน</a></li>
                 <li><a href="profile.html" class="nav-link">โปรไฟล์ผู้ใช้</a></li>
-                <li><a href="admin.html" class="nav-link">จัดการระบบ</a></li>
+                <li><a href="admin.html" class="nav-link active">จัดการระบบ</a></li>
             </ul>
             <div class="nav-actions">
-                </div>
+            </div>
             <div class="menu-toggle">
                 <span></span><span></span><span></span>
             </div>
@@ -119,8 +142,8 @@
                 </a>
             </div>
 
-            <div style="display: flex; gap: 1.5rem; margin-bottom: 2.5rem;">
-                <div style="flex: 1; background: var(--bg-card); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 1.5rem;">
+            <div style="display: flex; gap: 1.5rem; margin-bottom: 2.5rem; flex-wrap: wrap;">
+                <div style="flex: 1; min-width: 250px; background: var(--bg-card); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 1.5rem;">
                     <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(6,182,212,0.1); color: var(--accent-cyan); display: flex; align-items: center; justify-content: center; font-size: 2rem;">
                         <i class="fa-solid fa-users"></i>
                     </div>
@@ -129,7 +152,15 @@
                         <span id="totalUsersStat" style="font-size: 2rem; font-weight: 800; font-family: var(--font-heading);">0</span>
                     </div>
                 </div>
-                
+                <div style="flex: 1; min-width: 250px; background: var(--bg-card); padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 1.5rem;">
+                    <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(139,92,246,0.1); color: var(--accent-purple); display: flex; align-items: center; justify-content: center; font-size: 2rem;">
+                        <i class="fa-solid fa-user-graduate"></i>
+                    </div>
+                    <div>
+                        <h4 style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.25rem;">จำนวนนักเรียน</h4>
+                        <span id="totalStudentsStat" style="font-size: 2rem; font-weight: 800; font-family: var(--font-heading);">0</span>
+                    </div>
+                </div>
             </div>
 
             <div class="admin-table-card">
@@ -143,14 +174,16 @@
                             <tr>
                                 <th>รหัส (ID)</th>
                                 <th>ชื่อผู้ใช้ (Username)</th>
+                                <th>อีเมล (Email)</th>
                                 <th>ชื่อ-นามสกุล</th>
+                                <th>วันที่สมัคร</th>
                                 <th>บทบาท (Role)</th>
-                                <th>จำนวนคอร์สที่ลงเรียน</th>
+                                <th>จำนวนคอร์ส</th>
                                 <th>การจัดการ</th>
                             </tr>
                         </thead>
                         <tbody id="usersTableBody">
-                            <tr><td colspan="6" style="text-align: center; color: var(--text-muted);">กำลังโหลดข้อมูลจากฐานข้อมูล...</td></tr>
+                            <tr><td colspan="8" style="text-align: center; color: var(--text-muted);">กำลังโหลดข้อมูลจากฐานข้อมูล...</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -164,27 +197,34 @@
             <div class="modal-header">
                 <h3 style="font-family:var(--font-heading);">
                     <i class="fa-solid fa-clock-rotate-left" style="color:var(--accent-cyan); margin-right:0.5rem;"></i> 
-                    ประวัติการลงทะเบียนวิชาเรียน
+                    ประวัติและข้อมูลสมาชิก
                 </h3>
                 <button class="modal-close" onclick="closeUserHistoryModal()">✕</button>
             </div>
             
-            <div style="margin-bottom: 1.5rem; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:0.25rem;">กำลังดูประวัติของสมาชิก:</p>
+            <div style="margin-bottom: 1.5rem; background: rgba(255,255,255,0.02); padding: 1.25rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <p style="color:var(--text-muted); font-size:0.85rem; margin-bottom:0.25rem;">ข้อมูลบัญชีผู้ใช้:</p>
                 <h4 id="historyModalUserName" style="font-size:1.2rem; color:var(--text-primary);">กำลังโหลด...</h4>
+                
+                <div class="modal-user-info-grid">
+                    <div><i class="fa-solid fa-id-badge"></i> รหัสผู้ใช้ (ID): <span id="historyModalUserId">-</span></div>
+                    <div><i class="fa-solid fa-envelope"></i> อีเมล: <span id="historyModalUserEmail">-</span></div>
+                    <div style="grid-column: span 2;"><i class="fa-solid fa-calendar-check"></i> วันที่สมัครสมาชิก: <span id="historyModalUserJoined">-</span></div>
+                </div>
             </div>
 
-            <div class="table-responsive" style="margin-top: 0; max-height: 350px; overflow-y: auto;">
+            <h4 style="margin-bottom: 0.75rem; font-size: 1rem;"><i class="fa-solid fa-book-open"></i> ประวัติการลงทะเบียนวิชาเรียน</h4>
+            <div class="table-responsive" style="margin-top: 0; max-height: 250px; overflow-y: auto;">
                 <table>
                     <thead>
                         <tr>
                             <th>ชื่อวิชาที่ลงทะเบียน</th>
                             <th>หมวดหมู่</th>
-                            <th>วันที่ลงทะเบียน (Enrolled At)</th>
+                            <th>วันที่ลงทะเบียน</th>
                         </tr>
                     </thead>
                     <tbody id="userHistoryTableBody">
-                        </tbody>
+                    </tbody>
                 </table>
             </div>
 
@@ -196,156 +236,6 @@
 
     <script src="js/state.js"></script>
     <script src="js/main.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            verifySystemAdminPermissions();
-        });
-
-        // 1. ตรวจสอบสิทธิ์
-        function verifySystemAdminPermissions() {
-            const currentUser = window.WebtechState.getCurrentUser();
-            const restrictedPanel = document.getElementById('restrictedAccessPanel');
-            const systemPanel = document.getElementById('adminSystemPanel');
-
-            if (!currentUser || currentUser.role !== 'admin') {
-                if(restrictedPanel) restrictedPanel.style.display = 'block';
-                if(systemPanel) systemPanel.style.display = 'none';
-            } else {
-                if(restrictedPanel) restrictedPanel.style.display = 'none';
-                if(systemPanel) systemPanel.style.display = 'block';
-                fetchSystemUsersData();
-            }
-        }
-
-        // 2. ดึงข้อมูล User จาก API (SQLite)
-        async function fetchSystemUsersData() {
-            const token = localStorage.getItem('webtech_token');
-
-            try {
-                const response = await fetch('/api/admin/users', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok && result.data) {
-                    renderSystemUsersTable(result.data);
-                } else {
-                    fallbackLocalUsers();
-                }
-            } catch (err) {
-                console.error("API Error:", err);
-                fallbackLocalUsers();
-            }
-        }
-
-        function fallbackLocalUsers() {
-            let localUsers = [];
-            try {
-                localUsers = JSON.parse(localStorage.getItem('webtech_users')) || [];
-            } catch(e) {}
-            renderSystemUsersTable(localUsers);
-        }
-
-        // 3. วาดตารางสมาชิก (แบบกันแครช 100%)
-        function renderSystemUsersTable(users) {
-            const tbody = document.getElementById('usersTableBody');
-            if (!tbody) return; // ถ้าหาตารางไม่เจอ ให้หยุดทำทันที
-            
-            if (!Array.isArray(users)) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#EF4444;">ข้อมูลผิดพลาด ไม่สามารถแสดงผลได้</td></tr>`;
-                return;
-            }
-
-            // 🌟 จุดที่เพิ่มความปลอดภัย: อัปเดตสถิติ เช็คก่อนว่ามีกล่อง id นี้ไหม
-            const studentCount = users.filter(u => (u.role || '').toLowerCase() === 'student').length;
-            
-            const statUsers = document.getElementById('totalUsersStat');
-            if (statUsers) statUsers.innerText = users.length;
-            
-            const statStudents = document.getElementById('totalStudentsStat');
-            if (statStudents) statStudents.innerText = studentCount;
-
-            if (users.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center;">ไม่พบข้อมูลสมาชิกในระบบ</td></tr>`;
-                return;
-            }
-
-            tbody.innerHTML = users.map(user => {
-                const safeRole = (user.role || 'student').toLowerCase();
-                const isStudent = safeRole === 'student';
-                const roleTagClass = isStudent ? '' : 'admin';
-                const roleBg = isStudent ? 'rgba(6,182,212,0.1)' : 'rgba(239,68,68,0.1)';
-                const roleColor = isStudent ? 'var(--accent-cyan)' : '#EF4444';
-                
-                const enrolledCount = user.total_enrolled || 0;
-                const safeUsername = user.username || 'Unknown';
-                const safeFullname = user.fullname || 'ไม่ระบุชื่อ';
-                const cleanFullname = safeFullname.replace(/'/g, "\\'");
-
-                return `
-                    <tr>
-                        <td><code style="color:var(--text-muted);">#${user.id || Math.floor(Math.random()*100)}</code></td>
-                        <td><strong style="color:var(--accent-cyan);">${safeUsername}</strong></td>
-                        <td><span style="color:white;">${safeFullname}</span></td>
-                        <td>
-                            <span class="role-tag-mini ${roleTagClass}" style="background:${roleBg}; color:${roleColor}; border-color:${roleColor};">
-                                ${safeRole.toUpperCase()}
-                            </span>
-                        </td>
-                        <td>
-                            <span style="font-weight:bold;">${enrolledCount}</span> คอร์ส
-                        </td>
-                        <td>
-                            <button class="btn btn-secondary btn-sm" onclick="openUserHistoryModal(${user.id || 0}, '${cleanFullname}')" style="padding: 0.3rem 0.6rem; font-size: 0.8rem;">
-                                <i class="fa-solid fa-eye" style="color:var(--accent-cyan);"></i> ดูประวัติ
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        // 4. เปิด Modal และดึงประวัติการเรียน (History)
-        async function openUserHistoryModal(userId, fullname) {
-            const modal = document.getElementById('userHistoryModal');
-            const tbody = document.getElementById('userHistoryTableBody');
-            const token = localStorage.getItem('webtech_token');
-            if(!modal || !tbody) return;
-
-            const nameLabel = document.getElementById('historyModalUserName');
-            if(nameLabel) nameLabel.innerText = fullname;
-            
-            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">กำลังดึงข้อมูลจากฐานข้อมูล...</td></tr>`;
-            modal.classList.add('active');
-
-            try {
-                const response = await fetch(`/api/admin/users/${userId}/history`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                const result = await response.json();
-                
-                if (response.ok && result.data && result.data.length > 0) {
-                    tbody.innerHTML = result.data.map(item => `
-                        <tr>
-                            <td style="font-weight:bold; color:#F9FAFB;">${item.title || 'ไม่ทราบชื่อวิชา'}</td>
-                            <td><span class="role-tag-mini" style="font-size:0.65rem;">${item.category || 'ไม่ระบุ'}</span></td>
-                            <td style="color:var(--text-muted); font-size:0.85rem;">${item.enrolled_at ? new Date(item.enrolled_at).toLocaleString('th-TH') : '-'}</td>
-                        </tr>
-                    `).join('');
-                } else {
-                    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:var(--text-muted);">สมาชิกรายนี้ยังไม่มีประวัติการลงทะเบียนเรียน</td></tr>`;
-                }
-            } catch (error) {
-                tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; color:#EF4444;">เกิดข้อผิดพลาดในการดึงประวัติการเรียน</td></tr>`;
-            }
-        }
-
-        function closeUserHistoryModal() {
-            const modal = document.getElementById('userHistoryModal');
-            if(modal) modal.classList.remove('active');
-        }
-    </script>
+    <script src="js/system.js"></script>
 </body>
 </html>

@@ -432,3 +432,29 @@ function animateConfetti() {
         ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
     }
 }
+
+async function handleUnenrollCourse(courseId) {
+    // แจ้งเตือนก่อนลบ
+    if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการยกเลิกคอร์สเรียนนี้? ประวัติความคืบหน้าจะหายไปทั้งหมด')) return;
+
+    const token = localStorage.getItem('webtech_token');
+    try {
+        const response = await fetch(`/api/courses/${courseId}/unenroll`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        });
+        const result = await response.json();
+        
+        if (response.ok) {
+            showToast('ยกเลิกสำเร็จ', 'นำคอร์สเรียนออกจากห้องเรียนของคุณแล้ว', 'success');
+            // รีเฟรชหน้าเว็บเพื่อให้ตารางคอร์สเรียนอัปเดต
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showToast('ผิดพลาด', result.message, 'error');
+        }
+    } catch (err) {
+        showToast('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+    }
+}

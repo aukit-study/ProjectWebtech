@@ -265,10 +265,8 @@
 </head>
 <body>
 
-    <!-- Canvas for Confetti -->
     <canvas id="confettiCanvas"></canvas>
 
-    <!-- Header Navigation -->
     <header>
         <div class="nav-container">
             <a href="index.html" class="logo">
@@ -281,8 +279,7 @@
                 <li><a href="admin.html" class="nav-link">จัดการระบบ</a></li>
             </ul>
             <div class="nav-actions">
-                <!-- Loaded dynamically by main.js -->
-            </div>
+                </div>
             <div class="menu-toggle">
                 <span></span>
                 <span></span>
@@ -291,38 +288,34 @@
         </div>
     </header>
 
-    <!-- Main Content Container -->
     <main>
-        <!-- Enrolled Courses Overview (Shown if no courseId) -->
         <div id="enrolledCoursesOverview" style="display: none;">
             <div class="section-title-wrapper">
                 <h2 class="section-title"><i class="fa-solid fa-book-open"></i> ห้องเรียนของคุณ (คอร์สที่สมัครไว้)</h2>
             </div>
             <div id="enrolledCoursesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 2rem;">
-                <!-- Rendered dynamically by classroom.js -->
-            </div>
+                </div>
         </div>
 
         <div id="classroomMainContent" style="display: none;">
-            <!-- Course Header & Classroom Info Summary -->
             <div class="classroom-header-panel">
                 <div>
                     <span id="classroomCourseCategory" class="role-tag-mini" style="margin-bottom: 0.5rem; display: inline-block;">LOADING...</span>
                     <h2 id="classroomCourseTitle" style="font-family: var(--font-heading); font-size: 1.6rem;">กำลังโหลดคอร์สเรียน...</h2>
+                    
+                    <button class="btn btn-secondary btn-sm" id="unenrollBtn" style="margin-top: 1rem; border-color: #EF4444; color: #EF4444;" onclick="triggerUnenroll()">
+                        <i class="fa-solid fa-trash-can"></i> ยกเลิกคอร์สเรียนนี้
+                    </button>
                 </div>
-                <!-- Course Completion Progress Bar -->
+
                 <div style="min-width: 280px;" id="courseOverallProgressContainer">
-                    <!-- Loaded Dynamically -->
-                </div>
+                    </div>
             </div>
 
-            <!-- Split Layout Classroom -->
             <div class="classroom-container">
-                <!-- Left Side: Custom Video Player and Lesson Contents -->
                 <div>
                     <div class="video-player-card">
                         <div class="video-wrapper">
-                            <!-- Custom Cyber IDE Media Player Mockup -->
                             <div class="custom-mock-player" id="classroomMediaPlayer">
                                 <div class="mock-progress-line"></div>
                                 <div class="mock-play-btn" onclick="togglePlaySimulation()">
@@ -359,18 +352,15 @@
                     </div>
                 </div>
 
-                <!-- Right Side: Lessons Timeline -->
                 <div class="timeline-card">
                     <h3 style="font-size:1.15rem; font-family:var(--font-heading); border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;"><i class="fa-solid fa-list-ol" style="color:var(--accent-purple); margin-right:0.5rem;"></i> แผนการสอน (Lessons)</h3>
                     <ul class="timeline-list" id="lessonsTimelineContainer">
-                        <!-- Rendered Dynamically -->
-                    </ul>
+                        </ul>
                 </div>
             </div>
         </div>
     </main>
 
-    <!-- Modal for Badge Unlocked Celebration -->
     <div class="modal-backdrop" id="badgeUnlockModal">
         <div class="modal-box">
             <div class="modal-header">
@@ -379,8 +369,7 @@
             </div>
             <div class="badge-popup-card">
                 <div class="badge-popup-icon" id="badgePopupIconContainer">
-                    <!-- Loaded dynamically -->
-                </div>
+                    </div>
                 <h4 style="font-size: 1.5rem; margin-bottom: 0.5rem;" id="badgePopupTitle">Badge Title</h4>
                 <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;" id="badgePopupDesc">Badge Description</p>
                 <div style="background: rgba(255,255,255,0.02); border:1px solid var(--border-color); padding: 0.75rem; border-radius: var(--border-radius-sm); font-size: 0.8rem; color: var(--accent-cyan); font-weight:700;">
@@ -393,7 +382,6 @@
         </div>
     </div>
 
-    <!-- Footer -->
     <footer>
         <div class="footer-container">
             <div class="footer-logo">Webtech E-Learning Platform</div>
@@ -401,9 +389,54 @@
         </div>
     </footer>
 
-    <!-- Scripts Section -->
     <script src="js/state.js"></script>
     <script src="js/main.js"></script>
     <script src="js/classroom.js"></script>
+    <script>
+        function triggerUnenroll() {
+            // ดึงไอดีคอร์สจาก URL (เช่น ?courseId=c-5)
+            const urlParams = new URLSearchParams(window.location.search);
+            const courseIdParam = urlParams.get('courseId');
+            
+            if (courseIdParam) {
+                const actualId = courseIdParam.replace('c-', '');
+                handleUnenrollCourse(actualId);
+            } else {
+                showToast('ผิดพลาด', 'ไม่พบรหัสคอร์สเรียน', 'error');
+            }
+        }
+
+        async function handleUnenrollCourse(courseId) {
+            if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการยกเลิกคอร์สเรียนนี้? ประวัติความคืบหน้าจะหายไปทั้งหมด')) return;
+
+            const token = localStorage.getItem('webtech_token');
+            const unenrollBtn = document.getElementById('unenrollBtn');
+            unenrollBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังดำเนินการ...';
+            unenrollBtn.disabled = true;
+
+            try {
+                const response = await fetch(`/api/courses/${courseId}/unenroll`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showToast('ยกเลิกสำเร็จ', 'นำคอร์สเรียนออกจากห้องเรียนของคุณแล้ว', 'success');
+                    // เด้งกลับไปหน้าห้องเรียนรวม หลังจากลบเสร็จ
+                    setTimeout(() => window.location.href = 'classroom.html', 1500);
+                } else {
+                    showToast('ผิดพลาด', result.message || 'ไม่สามารถยกเลิกได้', 'error');
+                    unenrollBtn.innerHTML = '<i class="fa-solid fa-trash-can"></i> ยกเลิกคอร์สเรียนนี้';
+                    unenrollBtn.disabled = false;
+                }
+            } catch (err) {
+                showToast('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+                unenrollBtn.innerHTML = '<i class="fa-solid fa-trash-can"></i> ยกเลิกคอร์สเรียนนี้';
+                unenrollBtn.disabled = false;
+            }
+        }
+    </script>
 </body>
 </html>
