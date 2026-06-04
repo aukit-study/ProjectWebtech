@@ -7,7 +7,6 @@ let activeLesson = null;
 let isVideoPlayingSimulated = false;
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Get Course ID from URL Query Params
     const urlParams = new URLSearchParams(window.location.search);
     const courseId = urlParams.get('courseId');
 
@@ -21,13 +20,94 @@ document.addEventListener('DOMContentLoaded', () => {
     } else {
         if (overviewEl) overviewEl.style.display = 'none';
         if (mainEl) mainEl.style.display = 'block';
-        // 2. Load Active Course
+        // ซ่อน toolbar เมื่ออยู่ในโหมดดูบทเรียน
+        const toolbar = document.getElementById('searchFilterBar');
+        if (toolbar) toolbar.style.display = 'none';
         loadClassroomCourse(courseId);
     }
 
-    // 3. Setup Confetti Canvas Size
     initConfettiCanvas();
 });
+
+// ===== SEARCH & FILTER =====
+function initSearchFilter() {
+    const toolbar = document.getElementById('searchFilterBar');
+    const searchInput = document.getElementById('searchInput');
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    let currentFilter = 'all';
+
+    // แสดง toolbar
+    if (toolbar) toolbar.style.display = 'flex';
+
+    function applyFilter() {
+        const keyword = searchInput ? searchInput.value.toLowerCase().trim() : '';
+        const cards = document.querySelectorAll('#enrolledCoursesGrid .card');
+        const noResultsMsg = document.getElementById('noResultsMsg');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            // ดึงชื่อคอร์สจาก h3
+            const title = card.querySelector('h3')?.textContent.toLowerCase() || '';
+            // ดึง tag หมวดหมู่จาก role-tag-mini
+            const tag = card.querySelector('.role-tag-mini')?.textContent.toLowerCase() || '';
+            // ดึง progress จาก progress-bar width style หรือ text
+            const progressText = card.querySelector('[style*="width:"]');
+            const progressVal = parseFloat(progressText?.style?.width) || 0;
+
+            const matchKeyword = !keyword || title.includes(keyword);
+
+            let matchFilter = false;
+            switch (currentFilter) {
+                case 'all':
+                    matchFilter = true;
+                    break;
+                case 'javascript':
+                    matchFilter = tag.includes('javascript');
+                    break;
+                case 'htmlcss':
+                    matchFilter = tag.includes('html') || tag.includes('css');
+                    break;
+                case 'react':
+                    matchFilter = tag.includes('react');
+                    break;
+                case 'done':
+                    matchFilter = progressVal >= 100;
+                    break;
+                case 'inprogress':
+                    matchFilter = progressVal > 0 && progressVal < 100;
+                    break;
+                default:
+                    matchFilter = true;
+            }
+
+            const visible = matchKeyword && matchFilter;
+            card.style.display = visible ? '' : 'none';
+            if (visible) visibleCount++;
+        });
+
+        // แสดง/ซ่อน no-results message
+        if (noResultsMsg) {
+            noResultsMsg.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+    }
+
+    // Search input listener
+    if (searchInput) {
+        searchInput.addEventListener('input', applyFilter);
+    }
+
+    // Filter button listeners
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            filterBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.dataset.filter;
+            applyFilter();
+        });
+    });
+}
+
+// ===== RENDER ENROLLED COURSES OVERVIEW =====
 async function renderEnrolledCoursesOverview() {
     const container = document.getElementById('enrolledCoursesGrid');
     if (!container) return;
@@ -43,7 +123,6 @@ async function renderEnrolledCoursesOverview() {
         const data = await response.json();
         const allCourses = data.courses || [];
         
-        // Filter those where is_enrolled > 0
         const enrolledCourses = allCourses.filter(c => c.is_enrolled > 0);
 
         if (enrolledCourses.length === 0) {
@@ -54,6 +133,9 @@ async function renderEnrolledCoursesOverview() {
                     <a href="index.html" class="btn btn-primary" style="margin-top: 1.5rem;">ไปเลือกคอร์สเรียนกัน!</a>
                 </div>
             `;
+            // ซ่อน toolbar ถ้าไม่มีคอร์ส
+            const toolbar = document.getElementById('searchFilterBar');
+            if (toolbar) toolbar.style.display = 'none';
             return;
         }
 
@@ -89,32 +171,32 @@ async function renderEnrolledCoursesOverview() {
                 </div>
             `;
         }).join('');
+
+        // เรียก initSearchFilter หลัง render cards เสร็จแล้ว
+        initSearchFilter();
+
     } catch (err) {
         console.error(err);
         container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #EF4444;">เกิดข้อผิดพลาดในการโหลดคอร์สเรียนของคุณ</div>`;
     }
 }
 
-// --- LOAD COURSE AND DEFAULT FIRST LESSON ---
+// ===== LOAD COURSE AND DEFAULT FIRST LESSON =====
 function loadClassroomCourse(courseId) {
     const courses = window.WebtechState.getCourses();
 
-    // If no course ID or course doesn't exist, default to the first one available
     activeCourse = courses.find(c => c.id === courseId);
     if (!activeCourse) {
         renderNoCoursesState();
         return;
     }
 
-    // Render Course UI Titles
     document.getElementById('classroomCourseCategory').innerText = activeCourse.category;
     document.getElementById('classroomCourseTitle').innerText = activeCourse.title;
 
-    // Render Timeline & Progress
     renderLessonsTimeline();
     renderCourseProgress();
 
-    // Select the first incomplete lesson, or just the first lesson overall if all are completed
     if (activeCourse.lessons && activeCourse.lessons.length > 0) {
         const firstIncomplete = activeCourse.lessons.find(l => !l.isCompleted);
         selectLesson(firstIncomplete ? firstIncomplete.id : activeCourse.lessons[0].id);
@@ -126,7 +208,7 @@ function renderNoCoursesState() {
     document.getElementById('lessonsTimelineContainer').innerHTML = "<li>ไม่มีบทเรียน</li>";
 }
 
-// --- RENDER LESSONS TIMELINE ---
+// ===== RENDER LESSONS TIMELINE =====
 function renderLessonsTimeline() {
     const container = document.getElementById('lessonsTimelineContainer');
     if (!container || !activeCourse || !activeCourse.lessons) return;
@@ -145,7 +227,7 @@ function renderLessonsTimeline() {
     }).join('');
 }
 
-// --- SELECT AND LOAD SINGLE LESSON DETAILS ---
+// ===== SELECT AND LOAD SINGLE LESSON DETAILS =====
 function selectLesson(lessonId) {
     if (!activeCourse || !activeCourse.lessons) return;
 
@@ -154,18 +236,15 @@ function selectLesson(lessonId) {
 
     activeLesson = targetLesson;
 
-    // Highlight active in timeline
     document.querySelectorAll('.timeline-item').forEach(item => item.classList.remove('active'));
     const activeTimelineItem = document.getElementById(`tl-${lessonId}`);
     if (activeTimelineItem) {
         activeTimelineItem.classList.add('active');
     }
 
-    // Update Detail Panel
     document.getElementById('currentLessonTitle').innerText = activeLesson.title;
     document.getElementById('currentLessonCourseName').innerText = activeCourse.title;
 
-    // Simulate premium custom technical description texts
     document.getElementById('currentLessonDescription').innerHTML = `
         <p style="margin-bottom: 1rem;">ยินดีต้อนรับเข้าสู่หัวข้อ <strong>${activeLesson.title}</strong> ในคอร์สเรียนนี้เราจะเน้นสร้างทักษะการลงมือทำ (Hands-on) ผ่านความรู้ด้านเทคโนโลยีเว็บระดับสูง</p>
         <p style="margin-bottom: 1rem;">โปรดคลิกเล่นวิดีโอจำลองด้านบนเพื่อศึกษาเนื้อหา เมื่อทำความเข้าใจแนวคิดหลักแล้ว ให้กดปุ่ม <strong>"Mark as Completed"</strong> ด้านขวาบนเพื่อยืนยันการเรียนรู้และอัปเกรดเปอร์เซ็นต์ความสำเร็จของวิชานี้!</p>
@@ -174,7 +253,6 @@ function selectLesson(lessonId) {
         </div>
     `;
 
-    // Manage "Mark as Completed" button state
     const completeBtn = document.getElementById('markAsCompletedBtn');
     if (completeBtn) {
         if (activeLesson.isCompleted) {
@@ -188,14 +266,13 @@ function selectLesson(lessonId) {
         }
     }
 
-    // Reset Player Mockup Play State
     isVideoPlayingSimulated = false;
     const playIcon = document.getElementById('playIconSim');
     if (playIcon) playIcon.className = 'fa-solid fa-play';
     document.getElementById('mockPlayerTitleText').innerText = `บทเรียน: ${activeLesson.title}`;
 }
 
-// --- RENDER DYNAMIC COURSE OVERALL PROGRESS BAR ---
+// ===== RENDER DYNAMIC COURSE OVERALL PROGRESS BAR =====
 function renderCourseProgress() {
     const container = document.getElementById('courseOverallProgressContainer');
     if (!container || !activeCourse) return;
@@ -217,21 +294,17 @@ function renderCourseProgress() {
     `;
 }
 
-// --- HANDLE MARK AS COMPLETED BUTTON CLICK ---
+// ===== HANDLE MARK AS COMPLETED BUTTON CLICK =====
 function handleMarkCompletedClick() {
     if (!activeCourse || !activeLesson) return;
 
-    // Toggle complete state
     const newStatus = !activeLesson.isCompleted;
-
     const result = window.WebtechState.markLessonComplete(activeCourse.id, activeLesson.id, newStatus);
 
     if (result.success) {
-        // Sync active objects
         activeCourse = result.course;
         activeLesson = activeCourse.lessons.find(l => l.id === activeLesson.id);
 
-        // Render UI
         renderLessonsTimeline();
         renderCourseProgress();
         selectLesson(activeLesson.id);
@@ -239,17 +312,13 @@ function handleMarkCompletedClick() {
         if (newStatus) {
             window.showToast("สำเร็จบทเรียน!", `คุณเรียนผ่านหัวข้อ "${activeLesson.title}" แล้ว`, "success");
 
-            // Check if course completed 100%
             const currentProgress = window.WebtechState.getCourseProgress(activeCourse);
             if (currentProgress === 100) {
-                // Play level up chime
                 playLevelUpSound();
-                // Explosion of confetti
                 triggerConfettiExplosion();
                 window.showToast("ยินดีด้วย! จบคอร์สเรียน", `คุณผ่านหลักสูตร "${activeCourse.title}" ครบ 100%`, "success");
             }
 
-            // Check if any badges unlocked just now
             if (result.unlockedJustNow && result.unlockedJustNow.length > 0) {
                 result.unlockedJustNow.forEach(badgeId => {
                     setTimeout(() => {
@@ -261,7 +330,7 @@ function handleMarkCompletedClick() {
     }
 }
 
-// --- MOCK MEDIA PLAYER CONTROLLER ---
+// ===== MOCK MEDIA PLAYER CONTROLLER =====
 function togglePlaySimulation() {
     isVideoPlayingSimulated = !isVideoPlayingSimulated;
     const playIcon = document.getElementById('playIconSim');
@@ -277,29 +346,24 @@ function togglePlaySimulation() {
     }
 }
 
-// --- CONFETTI & BADGES CELEBRATION SYSTEMS ---
+// ===== CONFETTI & BADGES CELEBRATION SYSTEMS =====
 function triggerBadgeUnlockModal(badgeId) {
     const badgeDefs = window.WebtechState.getBadgeDefinitions();
     const badge = badgeDefs.find(b => b.id === badgeId);
     if (!badge) return;
 
-    // Play unlocking level-up chime!
     playLevelUpSound();
 
-    // Populate Modal Content
     document.getElementById('badgePopupTitle').innerText = badge.title;
     document.getElementById('badgePopupDesc').innerText = badge.description;
     document.getElementById('badgePopupReq').innerText = badge.requirement;
 
-    // Load SVG Icon dynamically
     const iconContainer = document.getElementById('badgePopupIconContainer');
     iconContainer.innerHTML = window.TechSVGIcons[badgeId] || '';
 
-    // Show Modal
     const modal = document.getElementById('badgeUnlockModal');
     if (modal) modal.classList.add('active');
 
-    // Trigger local screen confetti
     triggerConfettiExplosion();
 }
 
@@ -308,16 +372,15 @@ function closeBadgeModal() {
     if (modal) modal.classList.remove('active');
 }
 
-// --- SYNTHESIZED BROWSER AUDIO API ---
+// ===== SYNTHESIZED BROWSER AUDIO API =====
 function playLevelUpSound() {
     try {
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 
-        // Tone 1: C5
         const osc1 = audioCtx.createOscillator();
         const gain1 = audioCtx.createGain();
         osc1.type = 'triangle';
-        osc1.frequency.setValueAtTime(523.25, audioCtx.currentTime); // C5
+        osc1.frequency.setValueAtTime(523.25, audioCtx.currentTime);
         gain1.gain.setValueAtTime(0.08, audioCtx.currentTime);
         gain1.gain.exponentialRampToValueAtTime(0.005, audioCtx.currentTime + 0.25);
         osc1.connect(gain1);
@@ -325,12 +388,11 @@ function playLevelUpSound() {
         osc1.start();
         osc1.stop(audioCtx.currentTime + 0.25);
 
-        // Tone 2: E5 (delayed)
         setTimeout(() => {
             const osc2 = audioCtx.createOscillator();
             const gain2 = audioCtx.createGain();
             osc2.type = 'sine';
-            osc2.frequency.setValueAtTime(659.25, audioCtx.currentTime); // E5
+            osc2.frequency.setValueAtTime(659.25, audioCtx.currentTime);
             gain2.gain.setValueAtTime(0.08, audioCtx.currentTime);
             gain2.gain.exponentialRampToValueAtTime(0.005, audioCtx.currentTime + 0.35);
             osc2.connect(gain2);
@@ -339,12 +401,11 @@ function playLevelUpSound() {
             osc2.stop(audioCtx.currentTime + 0.35);
         }, 80);
 
-        // Tone 3: G5 (delayed more)
         setTimeout(() => {
             const osc3 = audioCtx.createOscillator();
             const gain3 = audioCtx.createGain();
             osc3.type = 'sine';
-            osc3.frequency.setValueAtTime(783.99, audioCtx.currentTime); // G5
+            osc3.frequency.setValueAtTime(783.99, audioCtx.currentTime);
             gain3.gain.setValueAtTime(0.1, audioCtx.currentTime);
             gain3.gain.exponentialRampToValueAtTime(0.005, audioCtx.currentTime + 0.5);
             osc3.connect(gain3);
@@ -357,7 +418,7 @@ function playLevelUpSound() {
     }
 }
 
-// --- COMPACT CANVAS-BASED CONFETTI PARTICLE SYSTEM ---
+// ===== COMPACT CANVAS-BASED CONFETTI PARTICLE SYSTEM =====
 let confettiCanvas, ctx;
 let confettiActive = false;
 let particles = [];
@@ -385,9 +446,9 @@ function triggerConfettiExplosion() {
     for (let i = 0; i < particleCount; i++) {
         particles.push({
             x: Math.random() * confettiCanvas.width,
-            y: confettiCanvas.height + 20, // start below screen
+            y: confettiCanvas.height + 20,
             vx: (Math.random() - 0.5) * 8,
-            vy: -Math.random() * 15 - 10, // shoot upwards
+            vy: -Math.random() * 15 - 10,
             r: Math.random() * 6 + 4,
             color: colors[Math.floor(Math.random() * colors.length)],
             rotation: Math.random() * 360,
@@ -409,7 +470,7 @@ function animateConfetti() {
     let livingParticles = 0;
 
     particles.forEach(p => {
-        p.vy += 0.3; // gravity
+        p.vy += 0.3;
         p.x += p.vx;
         p.y += p.vy;
         p.rotation += p.rotationSpeed;
@@ -433,32 +494,7 @@ function animateConfetti() {
     }
 }
 
-async function handleUnenrollCourse(courseId) {
-    // แจ้งเตือนก่อนลบ
-    if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการยกเลิกคอร์สเรียนนี้? ประวัติความคืบหน้าจะหายไปทั้งหมด')) return;
-
-    const token = localStorage.getItem('webtech_token');
-    try {
-        const response = await fetch(`/api/courses/${courseId}/unenroll`, {
-            method: 'DELETE',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            }
-        });
-        const result = await response.json();
-        
-        if (response.ok) {
-            showToast('ยกเลิกสำเร็จ', 'นำคอร์สเรียนออกจากห้องเรียนของคุณแล้ว', 'success');
-            // รีเฟรชหน้าเว็บเพื่อให้ตารางคอร์สเรียนอัปเดต
-            setTimeout(() => location.reload(), 1500);
-        } else {
-            showToast('ผิดพลาด', result.message, 'error');
-        }
-    } catch (err) {
-        showToast('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
-    }
-}
-// --- UNENROLL SYSTEM (CUSTOM MODAL) ---
+// ===== UNENROLL SYSTEM =====
 function triggerUnenroll() {
     const urlParams = new URLSearchParams(window.location.search);
     const courseIdParam = urlParams.get('courseId');
@@ -471,13 +507,10 @@ function triggerUnenroll() {
     }
 }
 
-// 1. ฟังก์ชันเปิดกล่อง Modal ถามความแน่ใจ
 function handleUnenrollCourse(courseId) {
     const modal = document.getElementById('customConfirmModal');
     if (modal) {
         modal.classList.add('active');
-        
-        // ผูกคำสั่งให้ปุ่มสีแดง (ถ้ากดยืนยัน ให้ไปเรียกฟังก์ชัน executeUnenroll)
         document.getElementById('confirmUnenrollBtn').onclick = function() {
             closeCustomConfirm();
             executeUnenroll(courseId);
@@ -485,13 +518,11 @@ function handleUnenrollCourse(courseId) {
     }
 }
 
-// 2. ฟังก์ชันปิดกล่อง Modal
 function closeCustomConfirm() {
     const modal = document.getElementById('customConfirmModal');
     if (modal) modal.classList.remove('active');
 }
 
-// 3. ฟังก์ชันลงมือยกเลิกจริงๆ (ยิง API)
 async function executeUnenroll(courseId) {
     const token = localStorage.getItem('webtech_token');
     const unenrollBtn = document.getElementById('unenrollBtn');
