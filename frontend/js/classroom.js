@@ -458,3 +458,47 @@ async function handleUnenrollCourse(courseId) {
         showToast('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
     }
 }
+function triggerUnenroll() {
+            // ดึงไอดีคอร์สจาก URL (เช่น ?courseId=c-5)
+            const urlParams = new URLSearchParams(window.location.search);
+            const courseIdParam = urlParams.get('courseId');
+            
+            if (courseIdParam) {
+                const actualId = courseIdParam.replace('c-', '');
+                handleUnenrollCourse(actualId);
+            } else {
+                showToast('ผิดพลาด', 'ไม่พบรหัสคอร์สเรียน', 'error');
+            }
+        }
+
+        async function handleUnenrollCourse(courseId) {
+            if (!confirm('คุณแน่ใจหรือไม่ว่าต้องการยกเลิกคอร์สเรียนนี้? ประวัติความคืบหน้าจะหายไปทั้งหมด')) return;
+
+            const token = localStorage.getItem('webtech_token');
+            const unenrollBtn = document.getElementById('unenrollBtn');
+            unenrollBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> กำลังดำเนินการ...';
+            unenrollBtn.disabled = true;
+
+            try {
+                const response = await fetch(`/api/courses/${courseId}/unenroll`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    showToast('ยกเลิกสำเร็จ', 'นำคอร์สเรียนออกจากห้องเรียนของคุณแล้ว', 'success');
+                    // เด้งกลับไปหน้าห้องเรียนรวม หลังจากลบเสร็จ
+                    setTimeout(() => window.location.href = 'classroom.html', 1500);
+                } else {
+                    showToast('ผิดพลาด', result.message || 'ไม่สามารถยกเลิกได้', 'error');
+                    unenrollBtn.innerHTML = '<i class="fa-solid fa-trash-can"></i> ยกเลิกคอร์สเรียนนี้';
+                    unenrollBtn.disabled = false;
+                }
+            } catch (err) {
+                showToast('ข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้', 'error');
+                unenrollBtn.innerHTML = '<i class="fa-solid fa-trash-can"></i> ยกเลิกคอร์สเรียนนี้';
+                unenrollBtn.disabled = false;
+            }
+        }
