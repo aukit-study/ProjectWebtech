@@ -395,7 +395,14 @@
     </header>
 
     <main>
-        <!-- ===== SEARCH & FILTER TOOLBAR (แสดงเฉพาะหน้า overview) ===== -->
+
+        <!-- ===== ENROLLED COURSES OVERVIEW ===== -->
+        <div id="enrolledCoursesOverview" style="display: none;">
+            <div class="section-title-wrapper">
+                <h2 class="section-title"><i class="fa-solid fa-book-open"></i> ห้องเรียนของคุณ (คอร์สที่สมัครไว้)</h2>
+            </div>
+
+            <!-- ===== SEARCH & FILTER TOOLBAR (แสดงเฉพาะหน้า overview) ===== -->
         <div class="classroom-toolbar" id="searchFilterBar" style="display: none;">
             <div class="search-wrapper">
                 <i class="fa-solid fa-magnifying-glass"></i>
@@ -416,12 +423,7 @@
                 <button class="filter-btn" data-filter="inprogress">กำลังเรียน</button>
             </div>
         </div>
-
-        <!-- ===== ENROLLED COURSES OVERVIEW ===== -->
-        <div id="enrolledCoursesOverview" style="display: none;">
-            <div class="section-title-wrapper">
-                <h2 class="section-title"><i class="fa-solid fa-book-open"></i> ห้องเรียนของคุณ (คอร์สที่สมัครไว้)</h2>
-            </div>
+        
             <div id="enrolledCoursesGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 2rem;">
             </div>
             <div class="no-results-msg" id="noResultsMsg">
@@ -429,6 +431,7 @@
                 <p>ไม่พบคอร์สที่ตรงกับการค้นหา</p>
             </div>
         </div>
+
 
         <!-- ===== CLASSROOM MAIN CONTENT (เมื่อเลือกคอร์สแล้ว) ===== -->
         <div id="classroomMainContent" style="display: none;">

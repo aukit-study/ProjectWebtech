@@ -1,5 +1,14 @@
+let allSystemUsersData = []; // เก็บข้อมูลสมาชิกทั้งหมด
+
 document.addEventListener('DOMContentLoaded', () => {
     verifySystemAdminPermissions();
+
+    // ผูก Event ให้ช่องค้นหาและ Dropdown
+    const searchInput = document.getElementById('systemSearchInput');
+    const sortFilter = document.getElementById('systemSortFilter');
+
+    if (searchInput) searchInput.addEventListener('keyup', handleSystemUserFilter);
+    if (sortFilter) sortFilter.addEventListener('change', handleSystemUserFilter);
 });
 
 // 1. ตรวจสอบสิทธิ์ว่าใช่ Admin หรือไม่
@@ -28,7 +37,8 @@ async function fetchSystemUsersData() {
         const result = await response.json();
         
         if (response.ok && result.data) {
-            renderSystemUsersTable(result.data);
+            allSystemUsersData = result.data; // บันทึกข้อมูลต้นฉบับ
+            handleSystemUserFilter(); // เรียกฟังก์ชันกรอง/เรียง เพื่อวาดตาราง
         } else {
             fallbackLocalUsers();
         }
@@ -44,10 +54,52 @@ function fallbackLocalUsers() {
     try {
         localUsers = JSON.parse(localStorage.getItem('webtech_users')) || [];
     } catch(e) {}
-    renderSystemUsersTable(localUsers);
+    allSystemUsersData = localUsers;
+    handleSystemUserFilter();
 }
 
-// 4. วาดตารางสมาชิก
+// 4. 🌟 ฟังก์ชันหลักสำหรับค้นหา และจัดเรียงข้อมูล 🌟
+function handleSystemUserFilter() {
+    const keyword = (document.getElementById('systemSearchInput')?.value || '').toLowerCase();
+    const sortFilterVal = document.getElementById('systemSortFilter')?.value || 'NEWEST';
+
+    // Step A: คัดกรองข้อมูล (Search & Role Filter)
+    let filtered = allSystemUsersData.filter(user => {
+        const safeUsername = (user.username || '').toLowerCase();
+        const safeFullname = (user.fullname || '').toLowerCase();
+        const safeEmail = (user.email || '').toLowerCase();
+        const safeRole = (user.role || '').toLowerCase();
+
+        // หาคำที่ตรงกับ ชื่อ, username หรือ อีเมล
+        const matchSearch = safeUsername.includes(keyword) || safeFullname.includes(keyword) || safeEmail.includes(keyword);
+        
+        // กรองตามบทบาท
+        let matchRole = true;
+        if (sortFilterVal === 'ADMIN_ONLY') matchRole = safeRole === 'admin';
+        if (sortFilterVal === 'STUDENT_ONLY') matchRole = safeRole === 'student';
+
+        return matchSearch && matchRole;
+    });
+
+    // Step B: จัดเรียงข้อมูล (Sorting)
+    filtered.sort((a, b) => {
+        if (sortFilterVal === 'NEWEST') {
+            return new Date(b.created_at || 0) - new Date(a.created_at || 0); // ใหม่ไปเก่า
+        } else if (sortFilterVal === 'OLDEST') {
+            return new Date(a.created_at || 0) - new Date(b.created_at || 0); // เก่าไปใหม่
+        } else if (sortFilterVal === 'MOST_COURSES') {
+            return (b.total_enrolled || 0) - (a.total_enrolled || 0); // มากไปน้อย
+        } else if (sortFilterVal === 'LEAST_COURSES') {
+            return (a.total_enrolled || 0) - (b.total_enrolled || 0); // น้อยไปมาก
+        }
+        return 0; 
+    });
+
+    // ส่งข้อมูลที่ถูกกรองและเรียงแล้วไปวาดตาราง
+    renderSystemUsersTable(filtered);
+}
+
+// 5. วาดตารางสมาชิก
 function renderSystemUsersTable(users) {
     const tbody = document.getElementById('usersTableBody');
     if (!tbody) return; 
@@ -57,14 +109,15 @@ function renderSystemUsersTable(users) {
         return;
     }
 
-    const studentCount = users.filter(u => (u.role || '').toLowerCase() === 'student').length;
+    // อัปเดตสถิติด้านบนตามข้อมูล "ทั้งหมด" (ไม่ได้อิงตามผลกรอง)
+    const studentCount = allSystemUsersData.filter(u => (u.role || '').toLowerCase() === 'student').length;
     const statUsers = document.getElementById('totalUsersStat');
-    if (statUsers) statUsers.innerText = users.length;
+    if (statUsers) statUsers.innerText = allSystemUsersData.length;
     const statStudents = document.getElementById('totalStudentsStat');
     if (statStudents) statStudents.innerText = studentCount;
 
     if (users.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;">ไม่พบข้อมูลสมาชิกในระบบ</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 2rem;">ไม่พบข้อมูลสมาชิกที่ค้นหา</td></tr>`;
         return;
     }
 
@@ -112,7 +165,7 @@ function renderSystemUsersTable(users) {
     }).join('');
 }
 
-// 5. เปิดป๊อปอัปดูประวัติ
+// 6. เปิดป๊อปอัปดูประวัติ
 async function openUserHistoryModal(userId, fullname, email, joinedDate) {
     const modal = document.getElementById('userHistoryModal');
     const tbody = document.getElementById('userHistoryTableBody');
@@ -123,17 +176,10 @@ async function openUserHistoryModal(userId, fullname, email, joinedDate) {
         return;
     }
 
-    const nameLabel = document.getElementById('historyModalUserName');
-    if(nameLabel) nameLabel.innerText = fullname;
-    
-    const idLabel = document.getElementById('historyModalUserId');
-    if(idLabel) idLabel.innerText = '#' + userId;
-    
-    const emailLabel = document.getElementById('historyModalUserEmail');
-    if(emailLabel) emailLabel.innerText = email;
-    
-    const joinedLabel = document.getElementById('historyModalUserJoined');
-    if(joinedLabel) joinedLabel.innerText = joinedDate;
+    document.getElementById('historyModalUserName').innerText = fullname;
+    document.getElementById('historyModalUserId').innerText = '#' + userId;
+    document.getElementById('historyModalUserEmail').innerText = email;
+    document.getElementById('historyModalUserJoined').innerText = joinedDate;
     
     tbody.innerHTML = `<tr><td colspan="3" style="text-align:center;">กำลังดึงข้อมูลจากฐานข้อมูล...</td></tr>`;
     modal.classList.add('active');
@@ -161,7 +207,7 @@ async function openUserHistoryModal(userId, fullname, email, joinedDate) {
     }
 }
 
-// 6. ปิดป๊อปอัป
+// 7. ปิดป๊อปอัป
 function closeUserHistoryModal() {
     const modal = document.getElementById('userHistoryModal');
     if(modal) modal.classList.remove('active');

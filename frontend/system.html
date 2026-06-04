@@ -93,6 +93,27 @@
             color: var(--accent-cyan);
             margin-right: 4px;
         }
+        /* 🌟 ปรับแต่ง Dropdown ให้เข้ากับ Dark Theme */
+        .form-select {
+            cursor: pointer;
+            transition: var(--transition-fast);
+        }
+        
+        /* เปลี่ยนสีพื้นหลังของตัวเลือกให้เป็นสีเข้ม */
+        .form-select option {
+            background-color: #0f172a; /* สีพื้นหลังหลักของเว็บ */
+            color: #f8fafc; /* สีข้อความสีขาว */
+            font-size: 0.95rem;
+            padding: 10px;
+        }
+
+        /* เวลากดคลิก (Focus) ให้ตัวกล่องเป็นสีเข้มขึ้นนิดนึง เพื่อให้อ่านง่าย */
+        .form-select:focus {
+            background-color: #0f172a !important; 
+            border-color: var(--accent-purple) !important;
+            box-shadow: 0 0 10px rgba(139, 92, 246, 0.3) !important;
+            outline: none;
+        }
     </style>
 </head>
 <body>
@@ -163,10 +184,30 @@
                 </div>
             </div>
 
-            <div class="admin-table-card">
+            
+
+                <div class="admin-table-card">
                 <h3 style="font-family:var(--font-heading); font-size:1.25rem;">
                     <i class="fa-solid fa-address-book" style="color:var(--accent-purple); margin-right:0.5rem;"></i> ทะเบียนรายชื่อสมาชิก
                 </h3>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: var(--border-radius-md); border: 1px solid rgba(255,255,255,0.05);">
+                    
+                    <div style="flex: 1; min-width: 250px; position: relative;">
+                        <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 1.2rem; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                        <input type="text" id="systemSearchInput" class="form-input" placeholder="ค้นหาชื่อ, Username หรือ อีเมล..." style="padding-left: 2.8rem; border-radius: 50px; background: rgba(255,255,255,0.03);">
+                    </div>
+
+                    <select id="systemSortFilter" class="form-input form-select" style="width: auto; min-width: 220px; border-radius: 50px; background: rgba(255,255,255,0.03);">
+                        <option value="NEWEST">วันที่สมัคร: ล่าสุด - เก่าสุด</option>
+                        <option value="OLDEST">วันที่สมัคร: เก่าสุด - ล่าสุด</option>
+                        <option value="MOST_COURSES">จำนวนคอร์ส: มากที่สุด</option>
+                        <option value="LEAST_COURSES">จำนวนคอร์ส: น้อยที่สุด</option>
+                        <option value="ADMIN_ONLY">ดูเฉพาะ: ผู้ดูแลระบบ (Admin)</option>
+                        <option value="STUDENT_ONLY">ดูเฉพาะ: นักเรียน (Student)</option>
+                    </select>
+                </div>
+                
                 
                 <div class="table-responsive">
                     <table>
