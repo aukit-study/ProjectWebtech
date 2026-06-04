@@ -382,6 +382,25 @@
         </div>
     </div>
 
+    <div class="modal-backdrop" id="customConfirmModal">
+        <div class="modal-box" style="max-width: 420px; text-align: center; padding: 2.5rem 2rem;">
+            <div style="font-size: 3.5rem; color: #EF4444; margin-bottom: 1rem; filter: drop-shadow(0 0 15px rgba(239, 68, 68, 0.4));">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <h3 style="font-family: var(--font-heading); font-size: 1.5rem; margin-bottom: 0.5rem; color: white;">ยืนยันการยกเลิกคอร์ส?</h3>
+            <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 2rem; line-height: 1.5;">
+                คุณแน่ใจหรือไม่ว่าต้องการยกเลิกคอร์สเรียนนี้?<br>
+                <span style="color: #EF4444; font-weight: 600;">ประวัติความคืบหน้าของคุณจะหายไปทั้งหมด!</span>
+            </p>
+            <div style="display: flex; justify-content: center; gap: 1rem;">
+                <button class="btn btn-secondary" onclick="closeCustomConfirm()" style="flex: 1; justify-content: center;">ยกเลิก</button>
+                <button class="btn btn-primary" id="confirmUnenrollBtn" style="flex: 1; justify-content: center; background: #EF4444; border-color: #EF4444; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);">
+                    ใช่, ลบคอร์สเลย
+                </button>
+            </div>
+        </div>
+    </div>
+
     <footer>
         <div class="footer-container">
             <div class="footer-logo">Webtech E-Learning Platform</div>
