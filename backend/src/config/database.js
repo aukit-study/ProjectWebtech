@@ -36,7 +36,7 @@ async function initDatabase() {
                 cover_image TEXT,
                 price REAL DEFAULT 0,
                 max_capacity INTEGER DEFAULT 10,
-                total_lessons INTEGER DEFAULT 10,
+                lessons TEXT DEFAULT '[]',
                 created_by INTEGER,
                 created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -55,22 +55,7 @@ async function initDatabase() {
                 UNIQUE(user_id, course_id)
             );
 
-            CREATE TABLE IF NOT EXISTS badges (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                badge_name TEXT NOT NULL,
-                badge_img TEXT NOT NULL,
-                course_id INTEGER NOT NULL,
-                FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE
-            );
 
-            CREATE TABLE IF NOT EXISTS user_badges (
-                user_id INTEGER NOT NULL,
-                badge_id INTEGER NOT NULL,
-                earned_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                PRIMARY KEY (user_id, badge_id),
-                FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-                FOREIGN KEY (badge_id) REFERENCES badges(id) ON DELETE CASCADE
-            );
 
             CREATE INDEX IF NOT EXISTS idx_username ON users(username);
             CREATE INDEX IF NOT EXISTS idx_email ON users(email);
@@ -79,10 +64,14 @@ async function initDatabase() {
             CREATE INDEX IF NOT EXISTS idx_enrollments_course ON enrollments(course_id);
         `);
 
-        // 🔧 Migrate existing course table to include price field if missing
+        // 🔧 Migrate existing course table to include price and lessons field if missing
         const courseColumns = await db.all("PRAGMA table_info(courses)");
         if (!courseColumns.some(column => column.name === 'price')) {
             await db.run('ALTER TABLE courses ADD COLUMN price REAL DEFAULT 0');
+        }
+        if (!courseColumns.some(column => column.name === 'lessons')) {
+            await db.run("ALTER TABLE courses ADD COLUMN lessons TEXT DEFAULT '[]'");
+            console.log('🔧 Migrated courses table: Added lessons column successfully.');
         }
 
         const userColumns = await db.all("PRAGMA table_info(users)");

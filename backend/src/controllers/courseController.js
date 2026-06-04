@@ -47,7 +47,7 @@ class CourseController {
     // POST /api/courses - สร้างคอร์สใหม่ (admin only)
     static async createCourse(req, res, next) {
         const db = req.app.locals.db;
-        const { title, category, difficulty, description, cover_image, max_capacity, price } = req.body;
+        const { title, category, difficulty, description, cover_image, max_capacity, price, lessons } = req.body;
 
         // Validation
         if (!title || !category || !difficulty) {
@@ -68,7 +68,7 @@ class CourseController {
         try {
             const courseId = await CourseService.createCourse(
                 db,
-                { title, category, difficulty, description, cover_image, max_capacity, price: numericPrice },
+                { title, category, difficulty, description, cover_image, max_capacity, price: numericPrice, lessons },
                 req.user.id
             );
 
@@ -86,7 +86,7 @@ class CourseController {
     static async updateCourse(req, res, next) {
         const db = req.app.locals.db;
         const { id } = req.params;
-        const { title, category, difficulty, description, cover_image, max_capacity, price } = req.body;
+        const { title, category, difficulty, description, cover_image, max_capacity, price, lessons } = req.body;
 
         const numericPrice = price !== undefined ? Number(price) : undefined;
         if (numericPrice !== undefined && (Number.isNaN(numericPrice) || numericPrice < 0)) {
@@ -100,7 +100,7 @@ class CourseController {
             await CourseService.updateCourse(
                 db,
                 id,
-                { title, category, difficulty, description, cover_image, max_capacity, price: numericPrice }
+                { title, category, difficulty, description, cover_image, max_capacity, price: numericPrice, lessons }
             );
 
             return res.status(200).json({

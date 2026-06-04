@@ -6,28 +6,37 @@ class CourseService {
         let sql = `
             SELECT c.*, 
                    (SELECT COUNT(*) FROM enrollments e WHERE e.course_id = c.id) as current_bookings 
-                   ${userId ? `, (SELECT COUNT(*) FROM enrollments e WHERE e.course_id = c.id AND e.user_id = ${parseInt(userId)}) as is_enrolled` : ''}
+                   ${userId ? `, (SELECT COUNT(*) FROM enrollments e WHERE e.course_id = c.id AND e.user_id = ${parseInt(userId)}) as is_enrolled,
+                                (SELECT enrolled_at FROM enrollments e WHERE e.course_id = c.id AND e.user_id = ${parseInt(userId)} LIMIT 1) as enrolled_at` : ''}
             FROM courses c
         `;
-        return await db.all(sql);
+        const courses = await db.all(sql);
+        courses.forEach(c => {
+            try { c.lessons = JSON.parse(c.lessons || '[]'); } catch(e) { c.lessons = []; }
+        });
+        return courses;
     }
 
     // ดึงข้อมูลคอร์สเรียนตาม ID
     static async getCourseById(db, id) {
-        return await db.get(`
+        const course = await db.get(`
             SELECT c.*, 
                    (SELECT COUNT(*) FROM enrollments e WHERE e.course_id = c.id) as current_bookings 
             FROM courses c WHERE c.id = ?
         `, [id]);
+        if (course) {
+            try { course.lessons = JSON.parse(course.lessons || '[]'); } catch(e) { course.lessons = []; }
+        }
+        return course;
     }
 
     // สร้างคอร์สเรียนใหม่ (Admin only)
     static async createCourse(db, courseData, userId) {
-        const { title, category, difficulty, description, cover_image, max_capacity, price } = courseData;
+        const { title, category, difficulty, description, cover_image, max_capacity, price, lessons } = courseData;
 
         const result = await db.run(
-            `INSERT INTO courses (title, category, difficulty, description, cover_image, price, max_capacity, created_by)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO courses (title, category, difficulty, description, cover_image, price, max_capacity, lessons, created_by)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 title,
                 category,
@@ -36,6 +45,7 @@ class CourseService {
                 cover_image || null,
                 price !== undefined ? parseFloat(price) : 0,
                 max_capacity !== undefined ? parseInt(max_capacity) : 10,
+                JSON.stringify(lessons || []),
                 userId
             ]
         );
@@ -45,7 +55,7 @@ class CourseService {
 
     // แก้ไขข้อมูลคอร์สเรียน (Admin only)
     static async updateCourse(db, id, courseData) {
-        const { title, category, difficulty, description, cover_image, max_capacity, price } = courseData;
+        const { title, category, difficulty, description, cover_image, max_capacity, price, lessons } = courseData;
 
         // ตรวจสอบว่าคอร์สมีตัวตนอยู่ในระบบหรือไม่
         const existingCourse = await db.get('SELECT id, price FROM courses WHERE id = ?', [id]);
@@ -57,7 +67,7 @@ class CourseService {
 
         await db.run(
             `UPDATE courses 
-             SET title = ?, category = ?, difficulty = ?, description = ?, cover_image = ?, price = ?, max_capacity = ? 
+             SET title = ?, category = ?, difficulty = ?, description = ?, cover_image = ?, price = ?, max_capacity = ?, lessons = ? 
              WHERE id = ?`,
             [
                 title,
@@ -67,6 +77,7 @@ class CourseService {
                 cover_image !== undefined ? cover_image : null,
                 finalPrice,
                 max_capacity !== undefined ? parseInt(max_capacity) : 10,
+                JSON.stringify(lessons || []),
                 id
             ]
         );
