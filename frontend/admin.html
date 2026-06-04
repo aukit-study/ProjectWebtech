@@ -336,10 +336,25 @@
                 </div>
 
 
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label class="form-label">ราคา (THB)</label>
+                        <input type="number" id="crudCoursePrice" class="form-input" placeholder="ตัวอย่าง: 299" min="0"
+                            step="1" value="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">จำนวนคนรับได้สูงสุด</label>
+                        <input type="number" id="crudCourseMaxCapacity" class="form-input" placeholder="ตัวอย่าง: 10" min="1"
+                            step="1" value="10" required>
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label class="form-label">ราคา (THB)</label>
-                    <input type="number" id="crudCoursePrice" class="form-input" placeholder="ตัวอย่าง: 299" min="0"
-                        step="1" value="0" required>
+                    <label class="form-label">สีหน้าปก (Cover Image Color)</label>
+                    <div style="display: flex; gap: 1rem; align-items: center;">
+                        <input type="color" id="crudCourseCoverImage" class="form-input" value="#06B6D4" style="width: 60px; padding: 0.2rem; cursor: pointer;">
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">(ระบบจะนำสีนี้ไปสร้างภาพปกแบบ Gradient ให้อัตโนมัติ)</span>
+                    </div>
                 </div>
 
                 <div class="form-group">

@@ -83,7 +83,7 @@
 
         .profile-stats-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: 1fr;
             gap: 1rem;
             border-top: 1px solid rgba(255,255,255,0.06);
             border-bottom: 1px solid rgba(255,255,255,0.06);
@@ -197,10 +197,6 @@
                         <span class="stat-num" id="statCoursesEnrolled">0</span>
                         <span class="stat-label">คอร์สที่เรียน</span>
                     </div>
-                    <div class="stat-item">
-                        <span class="stat-num" id="statUnlockedBadges">0/4</span>
-                        <span class="stat-label">เหรียญรางวัล</span>
-                    </div>
                 </div>
 
                 <div class="rank-progress-card">
@@ -217,16 +213,6 @@
 
             <!-- Right Side: Enrolled Courses & Badge Gallery -->
             <div class="profile-card-right">
-                <!-- Achievement Badges (Gamification Showcase) -->
-                <div class="profile-section-card">
-                    <h3 style="font-size:1.25rem; font-family:var(--font-heading); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem;">
-                        <i class="fa-solid fa-medal" style="color:var(--accent-purple);"></i> คลังเหรียญเกียรติยศ (Badges System)
-                    </h3>
-                    <div class="badge-gallery" id="profileBadgesGrid">
-                        <!-- Loaded dynamically with Grayscale/Color state -->
-                    </div>
-                </div>
-
                 <!-- Enrolled Courses -->
                 <div class="profile-section-card">
                     <h3 style="font-size:1.25rem; font-family:var(--font-heading); margin-bottom:1.5rem; display:flex; align-items:center; gap:0.5rem;">

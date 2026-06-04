@@ -137,6 +137,8 @@ function openAddCourseModal() {
     document.getElementById('courseCrudForm').reset();
     document.getElementById('crudCourseId').value = '';
     document.getElementById('crudCoursePrice').value = 0;
+    document.getElementById('crudCourseMaxCapacity').value = 10;
+    document.getElementById('crudCourseCoverImage').value = '#06B6D4';
     document.getElementById('modalCrudTitle').innerHTML = '<i class="fa-solid fa-circle-plus" style="color:var(--accent-green); margin-right:0.5rem;"></i> เพิ่มข้อมูลคอร์สใหม่';
     document.getElementById('crudSubmitBtn').className = 'btn btn-success btn-sm';
     document.getElementById('crudSubmitBtn').innerHTML = '<i class="fa-solid fa-save"></i> เพิ่มคอร์สเรียน';
@@ -154,8 +156,22 @@ async function openEditCourseModal(courseId) {
         document.getElementById('crudCourseCategory').value = course.category;
         document.getElementById('crudCourseDifficulty').value = course.difficulty;
         document.getElementById('crudCoursePrice').value = course.price !== undefined ? course.price : 0;
+        document.getElementById('crudCourseMaxCapacity').value = course.max_capacity || 10;
+        
+        let coverHex = '#06B6D4';
+        if (course.cover_image) {
+            const hexMatch = course.cover_image.match(/#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})/);
+            if (hexMatch) coverHex = hexMatch[0];
+        }
+        document.getElementById('crudCourseCoverImage').value = coverHex;
+
         document.getElementById('crudCourseDescription').value = course.description;
-        document.getElementById('crudCourseLessons').value = '';
+        
+        let lessonsText = '';
+        if (course.lessons && Array.isArray(course.lessons)) {
+            lessonsText = course.lessons.map(l => l.title).join('\n');
+        }
+        document.getElementById('crudCourseLessons').value = lessonsText;
 
         document.getElementById('modalCrudTitle').innerHTML = '<i class="fa-solid fa-edit" style="color:var(--accent-cyan); margin-right:0.5rem;"></i> แก้ไขข้อมูลคอร์สเรียน';
         document.getElementById('crudSubmitBtn').className = 'btn btn-accent btn-sm';
@@ -176,12 +192,34 @@ async function handleCrudFormSubmit(e) {
 
     const token = localStorage.getItem('webtech_token');
     const courseId = document.getElementById('crudCourseId').value;
+    const lessonsRaw = document.getElementById('crudCourseLessons').value.trim();
+    const lessonsArray = lessonsRaw ? lessonsRaw.split('\n').filter(l => l.trim() !== '').map((title, idx) => ({
+        id: `l-${Date.now()}-${idx}`,
+        title: title.trim(),
+        isCompleted: false
+    })) : [];
+
+    const baseColor = document.getElementById('crudCourseCoverImage').value;
+    const darkenColor = (color) => {
+        let r = parseInt(color.substring(1,3), 16);
+        let g = parseInt(color.substring(3,5), 16);
+        let b = parseInt(color.substring(5,7), 16);
+        r = Math.max(0, r - 40).toString(16).padStart(2, '0');
+        g = Math.max(0, g - 40).toString(16).padStart(2, '0');
+        b = Math.max(0, b - 40).toString(16).padStart(2, '0');
+        return `#${r}${g}${b}`;
+    };
+    const cover_image = `linear-gradient(135deg, ${baseColor} 0%, ${darkenColor(baseColor)} 100%)`;
+
     const body = {
         title: document.getElementById('crudCourseTitle').value.trim(),
         category: document.getElementById('crudCourseCategory').value,
         difficulty: document.getElementById('crudCourseDifficulty').value,
         price: Number(document.getElementById('crudCoursePrice').value),
+        max_capacity: Number(document.getElementById('crudCourseMaxCapacity').value),
+        cover_image: cover_image,
         description: document.getElementById('crudCourseDescription').value.trim(),
+        lessons: lessonsArray
     };
 
     try {

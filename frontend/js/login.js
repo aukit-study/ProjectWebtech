@@ -18,38 +18,26 @@ async function handleLoginSubmit(e) {
     const passwordInput = document.getElementById('loginPassword').value;
     
     try {
-        try {
-            const response = await fetch('/api/auth/login', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: usernameInput, password: passwordInput })
-            });
-            const result = await response.json();
-            if (response.ok) {
-                localStorage.setItem('webtech_token', result.token);
-                window.WebtechState.setCurrentUser(result.user);
-                window.showToast("เข้าสู่ระบบสำเร็จ", `ยินดีต้อนรับกลับมา, ${result.user.fullname}!`, "success");
-                setTimeout(() => {
-                    window.location.href = result.user.role === 'admin' ? 'admin.html' : 'index.html';
-                }, 1000);
-                return;
-            }
-        } catch (apiErr) {
-            console.log('API not available, using localStorage login...');
-        }
+        const response = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: usernameInput, password: passwordInput })
+        });
+        const result = await response.json();
         
-        const loginResult = window.WebtechState.login(usernameInput, passwordInput);
-        if (loginResult.success) {
-            window.showToast("เข้าสู่ระบบสำเร็จ", `ยินดีต้อนรับกลับมา, ${loginResult.user.fullname}!`, "success");
+        if (response.ok) {
+            localStorage.setItem('webtech_token', result.token);
+            window.WebtechState.setCurrentUser(result.user);
+            window.showToast("เข้าสู่ระบบสำเร็จ", `ยินดีต้อนรับกลับมา, ${result.user.fullname}!`, "success");
             setTimeout(() => {
-                window.location.href = loginResult.user.role === 'admin' ? 'admin.html' : 'index.html';
+                window.location.href = result.user.role === 'admin' ? 'admin.html' : 'index.html';
             }, 1000);
         } else {
-            window.showToast("เข้าสู่ระบบล้มเหลว", loginResult.message, "error");
+            window.showToast("เข้าสู่ระบบล้มเหลว", result.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง", "error");
         }
     } catch (err) {
         console.error('Login error:', err);
-        window.showToast("เกิดข้อผิดพลาด", "ไม่สามารถเข้าสู่ระบบได้", "error");
+        window.showToast("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้", "error");
     }
 }
 
@@ -61,37 +49,25 @@ async function handleRegisterSubmit(e) {
     const passwordInput = document.getElementById('regPassword').value;
     
     try {
-        try {
-            const response = await fetch('/api/auth/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: usernameInput, fullname: fullnameInput, email: emailInput, password: passwordInput, role: currentRegRole })
-            });
-            const result = await response.json();
-            if (response.ok) {
-                localStorage.setItem('webtech_token', result.token);
-                window.WebtechState.setCurrentUser(result.user);
-                window.showToast("ลงทะเบียนสำเร็จ", `สร้างบัญชีเสร็จสิ้น!`, "success");
-                setTimeout(() => {
-                    window.location.href = currentRegRole === 'admin' ? 'admin.html' : 'index.html';
-                }, 1000);
-                return;
-            }
-        } catch (apiErr) {
-            console.log('API not available, using localStorage registration...');
-        }
+        const response = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username: usernameInput, fullname: fullnameInput, email: emailInput, password: passwordInput, role: currentRegRole })
+        });
+        const result = await response.json();
         
-        const registerResult = window.WebtechState.register(usernameInput, fullnameInput, passwordInput, currentRegRole);
-        if (registerResult.success) {
+        if (response.ok) {
+            localStorage.setItem('webtech_token', result.token);
+            window.WebtechState.setCurrentUser(result.user);
             window.showToast("ลงทะเบียนสำเร็จ", `สร้างบัญชีเสร็จสิ้น!`, "success");
             setTimeout(() => {
                 window.location.href = currentRegRole === 'admin' ? 'admin.html' : 'index.html';
             }, 1000);
         } else {
-            window.showToast("ลงทะเบียนล้มเหลว", registerResult.message, "error");
+            window.showToast("ลงทะเบียนล้มเหลว", result.message || "มีชื่อผู้ใช้นี้ในระบบแล้ว", "error");
         }
     } catch (err) {
         console.error('Register error:', err);
-        window.showToast("เกิดข้อผิดพลาด", "ไม่สามารถลงทะเบียนได้", "error");
+        window.showToast("เกิดข้อผิดพลาด", "ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ได้", "error");
     }
 }

@@ -29,13 +29,17 @@ async function loadStudentProfile() {
         const response = await fetch('/api/courses', { headers });
         const data = await response.json();
         allCourses = data.courses || [];
+        
+        if (window.WebtechState.syncWithAPI) {
+            window.WebtechState.syncWithAPI(allCourses);
+        }
     } catch (err) {
         console.error('Failed to load courses from API:', err);
     }
     
     // Get progress from state.js
     const stateCourses = window.WebtechState.getCourses();
-    const enrolledCourses = allCourses.filter(c => c.is_enrolled > 0);
+    const enrolledCourses = allCourses.filter(c => c.is_enrolled > 0 || c.enrolled_at);
     
     // Count details
     let totalLessonsCompleted = 0;
@@ -74,49 +78,10 @@ async function loadStudentProfile() {
     const percentExp = Math.min(Math.round((totalLessonsCompleted / nextMilestone) * 100), 100);
     document.getElementById('rankExpRatio').innerText = `${totalLessonsCompleted} / ${nextMilestone} Lessons`;
     document.getElementById('rankExpProgressBar').style.width = `${percentExp}%`;
-
-    // 5. Render Badge Gallery (Grayscale State Logic via LocalStorage check)
-    renderBadgeGallery(currentUser);
-
+    
     // 6. Render Enrolled Courses List
     renderEnrolledCoursesList(enrolledCourses, stateCourses);
 }
-
-// --- RENDER DYNAMIC BADGES GRID ---
-function renderBadgeGallery(currentUser) {
-    const badgesContainer = document.getElementById('profileBadgesGrid');
-    if (!badgesContainer) return;
-
-    // ดึงค่าคำนิยามเหรียญรางวัลจาก state.js ของกลุ่ม
-    const badgeDefs = window.WebtechState.getBadgeDefinitions();
-    const unlockedBadges = currentUser.unlockedBadges || [];
-
-    document.getElementById('statUnlockedBadges').innerText = `${unlockedBadges.length}/${badgeDefs.length}`;
-
-    if (badgeDefs.length === 0) {
-        badgesContainer.innerHTML = `<p style="color:var(--text-muted);">ไม่มีเหรียญรางวัลในระบบ</p>`;
-        return;
-    }
-
-    badgesContainer.innerHTML = badgeDefs.map(badge => {
-        const isUnlocked = unlockedBadges.includes(badge.id);
-        const lockedClass = isUnlocked ? '' : 'locked';
-        const svgIcon = window.TechSVGIcons[badge.id] || '';
-        const hoverTooltip = isUnlocked ? 'ปลดล็อกเรียบร้อย!' : 'ยังล็อกอยู่: ' + badge.requirement;
-
-        return `
-            <div class="badge-item ${lockedClass}" title="${hoverTooltip}">
-                <div class="badge-icon-wrapper" style="${isUnlocked ? '' : 'filter: grayscale(1) opacity(0.25);'}">
-                    ${svgIcon}
-                </div>
-                <div class="badge-title" style="${isUnlocked ? 'color:white;' : 'color:var(--text-muted);'}">${badge.title}</div>
-                <div class="badge-desc" style="font-size: 0.75rem; color: var(--text-secondary);">${badge.description}</div>
-            </div>
-        `;
-    }).join('');
-}
-
-// --- RENDER ENROLLED COURSES LIST ---
 function renderEnrolledCoursesList(enrolledCourses, stateCourses) {
     const container = document.getElementById('profileCoursesContainer');
     if (!container) return;
@@ -135,7 +100,7 @@ function renderEnrolledCoursesList(enrolledCourses, stateCourses) {
     container.innerHTML = enrolledCourses.map(course => {
         const stateCourse = stateCourses.find(c => c.id === `c-${course.id}`);
         const progress = stateCourse ? window.WebtechState.getCourseProgress(stateCourse) : 0;
-        const lessonsCount = stateCourse && stateCourse.lessons ? stateCourse.lessons.length : 0;
+        const lessonsCount = stateCourse && stateCourse.lessons ? stateCourse.lessons.length : (course.lessons ? course.lessons.length : 0);
         const completedCount = stateCourse && stateCourse.lessons ? stateCourse.lessons.filter(l => l.isCompleted).length : 0;
         
         let barColor = 'var(--accent-purple)';

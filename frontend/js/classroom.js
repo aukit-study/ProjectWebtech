@@ -63,6 +63,10 @@ async function renderEnrolledCoursesOverview() {
         if (response.ok && result.courses) {
             // กรองมาเฉพาะคอร์สที่เรา enroll ไว้จริงๆ
             allEnrolledCoursesData = result.courses.filter(c => c.is_enrolled > 0 || c.enrolled_at);
+            // ซิงค์ข้อมูลกับ WebtechState
+            if (window.WebtechState && window.WebtechState.syncWithAPI) {
+                window.WebtechState.syncWithAPI(result.courses);
+            }
             handleClassroomFilter(); // สั่งให้เริ่มจัดเรียงและแสดงผล
         } else {
             container.innerHTML = `<div style="grid-column: 1 / -1; text-align: center; color: #EF4444;">โหลดข้อมูลไม่สำเร็จ</div>`;
@@ -141,7 +145,7 @@ function renderEnrolledCoursesGrid(courses) {
     container.innerHTML = courses.map(course => {
         const stateCourse = window.WebtechState.getCourseById(`c-${course.id}`);
         const progress = stateCourse ? window.WebtechState.getCourseProgress(stateCourse) : 0;
-        const lessonsCount = stateCourse && stateCourse.lessons ? stateCourse.lessons.length : 0;
+        let lessonsCount = stateCourse && stateCourse.lessons ? stateCourse.lessons.length : (course.lessons ? course.lessons.length : 0);
         const completedCount = stateCourse && stateCourse.lessons ? stateCourse.lessons.filter(l => l.isCompleted).length : 0;
 
         // แปลงวันที่ให้อ่านง่าย
@@ -181,7 +185,25 @@ function renderEnrolledCoursesGrid(courses) {
 }
 
 // ===== LOAD COURSE AND DEFAULT FIRST LESSON =====
-function loadClassroomCourse(courseId) {
+async function loadClassroomCourse(courseId) {
+    // ดึงคอร์สจาก API และซิงค์ก่อนหากมี WebtechState.syncWithAPI
+    try {
+        const token = localStorage.getItem('webtech_token');
+        const actualId = String(courseId).replace('c-', '');
+        const response = await fetch(`/api/courses/${actualId}`, {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
+        
+        if (response.ok && result.course) {
+            if (window.WebtechState && window.WebtechState.syncWithAPI) {
+                window.WebtechState.syncWithAPI([result.course]);
+            }
+        }
+    } catch (e) {
+        console.warn("Could not sync course before loading classroom", e);
+    }
+
     const courses = window.WebtechState.getCourses();
 
     activeCourse = courses.find(c => c.id === courseId);
