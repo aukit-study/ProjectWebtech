@@ -12,7 +12,7 @@ class CourseService {
         `;
         const courses = await db.all(sql);
         courses.forEach(c => {
-            try { c.lessons = JSON.parse(c.lessons || '[]'); } catch(e) { c.lessons = []; }
+            try { c.lessons = JSON.parse(c.lessons || '[]'); } catch (e) { c.lessons = []; }
         });
         return courses;
     }
@@ -25,7 +25,7 @@ class CourseService {
             FROM courses c WHERE c.id = ?
         `, [id]);
         if (course) {
-            try { course.lessons = JSON.parse(course.lessons || '[]'); } catch(e) { course.lessons = []; }
+            try { course.lessons = JSON.parse(course.lessons || '[]'); } catch (e) { course.lessons = []; }
         }
         return course;
     }
@@ -63,8 +63,6 @@ class CourseService {
             throw new Error('COURSE_NOT_FOUND');
         }
 
-        const finalPrice = price !== undefined ? parseFloat(price) : existingCourse.price || 0;
-
         await db.run(
             `UPDATE courses 
              SET title = ?, category = ?, difficulty = ?, description = ?, cover_image = ?, price = ?, max_capacity = ?, lessons = ? 
@@ -75,7 +73,7 @@ class CourseService {
                 difficulty,
                 description,
                 cover_image !== undefined ? cover_image : null,
-                finalPrice,
+                price,
                 max_capacity !== undefined ? parseInt(max_capacity) : 10,
                 JSON.stringify(lessons || []),
                 id

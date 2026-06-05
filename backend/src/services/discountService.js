@@ -47,9 +47,7 @@ class DiscountService {
             discountPercent,
             discountAmount,
             recalculatedTotal: finalTotal,
-            discountReason,
-            calculatedAt: new Date().toISOString(),
-            calculatedBy: 'Server (Gatekeeper)'
+            discountReason
         };
     }
 }

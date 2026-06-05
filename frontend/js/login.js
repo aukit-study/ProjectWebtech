@@ -16,7 +16,7 @@ async function handleLoginSubmit(e) {
     e.preventDefault();
     const usernameInput = document.getElementById('loginUsername').value.trim();
     const passwordInput = document.getElementById('loginPassword').value;
-    
+
     try {
         const response = await fetch('/api/auth/login', {
             method: 'POST',
@@ -24,7 +24,7 @@ async function handleLoginSubmit(e) {
             body: JSON.stringify({ username: usernameInput, password: passwordInput })
         });
         const result = await response.json();
-        
+
         if (response.ok) {
             localStorage.setItem('webtech_token', result.token);
             window.WebtechState.setCurrentUser(result.user);
@@ -47,7 +47,7 @@ async function handleRegisterSubmit(e) {
     const fullnameInput = document.getElementById('regFullname').value.trim();
     const emailInput = document.getElementById('regEmail').value.trim();
     const passwordInput = document.getElementById('regPassword').value;
-    
+
     try {
         const response = await fetch('/api/auth/register', {
             method: 'POST',
@@ -55,7 +55,7 @@ async function handleRegisterSubmit(e) {
             body: JSON.stringify({ username: usernameInput, fullname: fullnameInput, email: emailInput, password: passwordInput, role: currentRegRole })
         });
         const result = await response.json();
-        
+
         if (response.ok) {
             localStorage.setItem('webtech_token', result.token);
             window.WebtechState.setCurrentUser(result.user);

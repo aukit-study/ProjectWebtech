@@ -212,7 +212,7 @@ const CartManager = {
                     priceLabel.innerHTML = `
                         <span style="text-decoration:line-through; color:#888; font-size:0.9rem;">฿${p.originalTotal}</span>
                         <span style="color:#10B981; margin-left:8px;">฿${p.recalculatedTotal}</span>
-                        <span style="font-size:0.7rem; color:#10B981; display:block;">${p.discountReason} · ${p.calculatedBy}</span>
+                        <span style="font-size:0.7rem; color:#10B981; display:block;">${p.discountReason} </span>
                     `;
                     await new Promise(r => setTimeout(r, 2000));
                 }

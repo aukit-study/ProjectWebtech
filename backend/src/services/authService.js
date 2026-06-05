@@ -9,12 +9,11 @@ class AuthService {
         }
 
         // 2. The Gatekeeper Pattern: ตรวจสอบว่ามี Username หรือ Email นี้ในระบบแล้วหรือยัง
-        // 🔒 บังคับใช้ Parameterized Query (?) เพื่อป้องกัน SQL Injection
         const existingUser = await db.get(
-            'SELECT id FROM users WHERE username = ? OR email = ?', 
+            'SELECT id FROM users WHERE username = ? OR email = ?', // 🔒 Parameterized Query (?) เพื่อป้องกัน SQL Injection
             [username, email]
         );
-        
+
         if (existingUser) {
             throw new Error('USER_ALREADY_EXISTS');
         }
@@ -40,7 +39,7 @@ class AuthService {
 
         // 2. The Gatekeeper Pattern: ค้นหา User ในฐานข้อมูลด้วย Parameterized Query
         const user = await db.get(
-            'SELECT * FROM users WHERE username = ?', 
+            'SELECT * FROM users WHERE username = ?',
             [username]
         );
 
@@ -52,16 +51,15 @@ class AuthService {
 
         // 4. Auth Logic: เมื่อผ่านการตรวจสอบ ให้สร้าง Stateless Identity (JWT Token) 
         // ดึงค่า JWT_SECRET และ JWT_EXPIRES_IN จากไฟล์ .env ที่เราสร้างไว้ 
-        const payload = { 
-            id: user.id, 
-            username: user.username, 
-            role: user.role 
+        const payload = {
+            id: user.id,
+            username: user.username,
+            role: user.role
         };
-        
-        const token = jwt.sign(
-            payload, 
-            process.env.JWT_SECRET, 
-            { expiresIn: process.env.JWT_EXPIRES_IN }
+
+        const token = jwt.sign(payload, process.env.JWT_SECRET, {
+            expiresIn: process.env.JWT_EXPIRES_IN
+        }
         );
 
         // ส่งข้อมูลผู้ใช้และตั๋ว JWT กลับไป (ไม่ส่ง password_hash กลับไปเด็ดขาด)

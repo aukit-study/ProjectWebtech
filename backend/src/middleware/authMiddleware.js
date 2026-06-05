@@ -27,7 +27,7 @@ function verifyToken(req, res, next) {
     try {
         // ตรวจสอบ JWT ด้วย JWT_SECRET
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        
+
         // เก็บข้อมูล user ที่ decode มาไว้ใน req.user เพื่อให้ route handler ใช้ได้
         req.user = decoded;
         next();
@@ -63,7 +63,6 @@ function optionalToken(req, res, next) {
         const decoded = jwt.verify(parts[1], process.env.JWT_SECRET);
         req.user = decoded;
     } catch (error) {
-        // Just ignore invalid token for optional auth
     }
     next();
 }
